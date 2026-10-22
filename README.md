@@ -6,12 +6,22 @@
 
 > Contenido elaborado con inteligencia artificial (Claude, de Anthropic) a partir de los libros citados, con fines exclusivamente educativos. Puede contener errores o simplificaciones y no reemplaza la lectura de los originales.
 
-## Cómo abrirla
+## Abrir
 
-- **Online (GitHub Pages):** en el repo, *Settings → Pages → Deploy from a branch → `main` / `/ (root)`*. La app queda en
-  `https://buenosairesfront.github.io/haciendomusica/`
+**▶ https://buenosairesfront.github.io/haciendomusica/**
+
+También aparece en la landing de **Buenos Aires Front**, sección *Apps web*.
+
 - **Local:** `python3 -m http.server` en la carpeta del repo y abrí `http://localhost:8000`.
-- **Un solo archivo:** `python3 build.py` genera `dist/haciendo-musica.html`, que se puede mandar por mail o abrir con doble clic.
+- **Un solo archivo:** [`dist/haciendo-musica.html`](dist/haciendo-musica.html) tiene toda la app inline: se puede mandar por mail o abrir con doble clic. Se regenera con `python3 build.py`.
+
+## Documentación
+
+| Documento | Para quién |
+|---|---|
+| [docs/USO.md](docs/USO.md) | Quien usa la app: secciones, lecciones, labs, enlaces directos y progreso |
+| [docs/DESARROLLO.md](docs/DESARROLLO.md) | Quien la modifica: arquitectura, router, cómo agregar citas, lecciones, términos y labs |
+| [docs/PUBLICAR.md](docs/PUBLICAR.md) | Publicación en GitHub Pages, enlaces desde la landing y build de archivo único |
 
 ## Qué hay adentro
 
@@ -53,4 +63,6 @@ Las citas son breves y se usan con fines educativos; los derechos pertenecen a s
   js/labs2.js     labs: EQ, compresor, mastering, oído, síntesis
   js/app.js       router y páginas
   build.py        empaqueta todo en un HTML
+  dist/           versión de un solo archivo
+  docs/           documentación
 ```
