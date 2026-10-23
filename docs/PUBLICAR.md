@@ -24,6 +24,8 @@ Como el router usa el hash, cualquier sección se puede enlazar directamente:
 - Primera lección: `https://buenosairesfront.github.io/haciendomusica/#leccion-oficio`
 - Glosario: `https://buenosairesfront.github.io/haciendomusica/#glosario`
 
+Para abrir en otro idioma se agrega `?lang=` antes del `#`: `?lang=en`, `?lang=de`, `?lang=zh`, `?lang=ja` o `?lang=hi`. Por ejemplo, el sintetizador en japonés: `https://buenosairesfront.github.io/haciendomusica/?lang=ja#lab-synth`. Sin `?lang=` se abre en español (o en el último idioma que eligió esa persona).
+
 ## Landing de Buenos Aires Front
 
 La app figura en la sección **Apps web** de la landing de Buenos Aires Front, con dos botones:
@@ -37,4 +39,4 @@ En el código de la landing esos enlaces están en el objeto `LINKS` como `demos
 
 ## Archivo único
 
-`dist/haciendo-musica.html` contiene toda la app en un solo archivo (CSS y JS inline). Sirve para mandarla por mail, subirla a otro hosting o usarla sin servidor. Se regenera con `python3 build.py`.
+`dist/haciendo-musica.html` contiene toda la app en un solo archivo (CSS, JS y los cinco paquetes de idioma inline, unos 1,4 MB). Sirve para mandarla por mail, subirla a otro hosting o usarla sin servidor. Se regenera con `python3 build.py`.

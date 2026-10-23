@@ -2,7 +2,7 @@
 window.S = window.S || {};
 (function (S) {
   const L = (S.labs = S.labs || {});
-  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz;
+  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz, tr = S.T;
 
   // shared: response curve of a chain of BiquadFilterNodes
   const NPTS = 240;
@@ -117,7 +117,7 @@ window.S = window.S || {};
           x.strokeStyle = "#fff"; x.lineWidth = 2; x.stroke();
           x.fillStyle = "#fff"; x.font = "600 10px " + V.css("--f-mono"); x.textAlign = "center"; x.fillText(String(i), p.x, p.y + 3.5); x.textAlign = "left";
         });
-        if (dry.gain.value > 0.5) { x.fillStyle = V.css("--warn"); x.font = "600 12px " + V.css("--f-mono"); x.fillText("EQ EN BYPASS", 10, 18); }
+        if (dry.gain.value > 0.5) { x.fillStyle = V.css("--warn"); x.font = "600 12px " + V.css("--f-mono"); x.fillText(tr("EQ EN BYPASS"), 10, 18); }
       });
 
       // per-band controls
@@ -130,7 +130,7 @@ window.S = window.S || {};
         const gn = U.slider({ label: "Ganancia", min: -RANGE, max: RANGE, step: 0.5, value: b.gain, fmt: (v) => (v > 0 ? "+" : "") + v.toFixed(1) + " dB", onInput: (v) => { b.gain = v; applyB(b); } });
         const q = U.slider({ label: "Q (ancho)", min: 0.3, max: 18, log: true, value: b.q, fmt: (v) => v.toFixed(1), onInput: (v) => { b.q = v; applyB(b); } });
         ui.push({ on, f, gn, q });
-        bandsBox.append(el("div", { class: "group" }, el("label", { class: "gt", for: "eqon" + i }, on, i + " · " + b.name), f, b.type === "highpass" ? null : gn, b.type === "peaking" || b.type === "highpass" ? q : null));
+        bandsBox.append(el("div", { class: "group" }, el("label", { class: "gt", for: "eqon" + i }, on, i + " · " + tr(b.name)), f, b.type === "highpass" ? null : gn, b.type === "peaking" || b.type === "highpass" ? q : null));
       });
       const syncUi = (i) => { const b = B[i]; ui[i].f.set(b.f, true); ui[i].gn.set(b.gain, true); ui[i].q.set(b.q, true); ui[i].on.checked = b.on; };
 
@@ -147,14 +147,14 @@ window.S = window.S || {};
         { n: "Radio / teléfono", src: null, t: "mix", b: [[0, 450, 0.9, 0, true], [4, 3500, 0.7, -18]] },
       ];
       const presetRow = el("div", { class: "btn-row" }, PRESETS.map((p) => el("button", {
-        type: "button", class: "btn sm", title: p.src ? "Basado en " + p.src : "",
+        type: "button", class: "btn sm", title: p.src ? tr("Basado en {s}", { s: p.src }) : "",
         onclick: () => {
           PRESETS[0].b.forEach(([i, f, q, gn, on]) => Object.assign(B[i], { f, q, gain: gn, on: on === undefined ? true : on }));
           p.b.forEach(([i, f, q, gn, on]) => Object.assign(B[i], { f, q, gain: gn, on: on === undefined ? true : on }));
           B.forEach((b, i) => { applyB(b); syncUi(i); });
           if (p.t && p.t !== target) { routeTarget(p.t); srcSeg.set(p.t); }
         },
-      }, p.n + (p.src ? " · " + p.src : ""))));
+      }, tr(p.n) + (p.src ? " · " + p.src : ""))));
       const byp = el("button", { type: "button", class: "btn sm" }, "A/B (bypass)");
       byp.addEventListener("click", () => { const b = dry.gain.value < 0.5; dry.gain.value = b ? 1 : 0; wet.gain.value = b ? 0 : 1; byp.classList.toggle("on", b); });
       const play = U.playBtn("Tocar", (on) => { playing = on; on ? startSrc() : stopSrc(); });
@@ -219,9 +219,9 @@ window.S = window.S || {};
         x.beginPath(); for (let d = -60; d <= 0; d += 0.5) { const px = ox + 24 + map(d), py = sz - 24 - map(curveOut(d)); d === -60 ? x.moveTo(px, py) : x.lineTo(px, py); }
         x.strokeStyle = V.css("--b-himid"); x.lineWidth = 3; x.stroke();
         const tp = map(st.thr); x.strokeStyle = V.css("--hot"); x.setLineDash([2, 3]); x.beginPath(); x.moveTo(ox + 24 + tp, 6); x.lineTo(ox + 24 + tp, sz - 24); x.stroke(); x.setLineDash([]);
-        x.fillStyle = V.css("--hot"); x.fillText("umbral", ox + 28 + tp, 16);
+        x.fillStyle = V.css("--hot"); x.fillText(tr("umbral"), ox + 28 + tp, 16);
         x.beginPath(); x.arc(ox + 24 + map(inDb), sz - 24 - map(curveOut(inDb)), 6, 0, 7); x.fillStyle = "#fff"; x.fill();
-        x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.7; x.fillText("ENTRADA (dB) →", ox + sz - 110, sz - 28); x.save(); x.translate(ox + 10, 90); x.rotate(-Math.PI / 2); x.fillText("SALIDA (dB) →", 0, 0); x.restore(); x.globalAlpha = 1;
+        x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.7; x.fillText(tr("ENTRADA (dB) →"), ox + sz - 110, sz - 28); x.save(); x.translate(ox + 10, 90); x.rotate(-Math.PI / 2); x.fillText(tr("SALIDA (dB) →"), 0, 0); x.restore(); x.globalAlpha = 1;
         // history
         ({ g: x, w, h } = V.fit(hcv, 200));
         x.fillStyle = V.css("--screen"); x.fillRect(0, 0, w, h);
@@ -234,7 +234,7 @@ window.S = window.S || {};
           x.fillStyle = V.css("--hot"); x.globalAlpha = 0.9; x.fillRect(xx, 0, bw + 0.5, Math.min(h * 0.18, (-r / 24) * h * 0.18));
           x.globalAlpha = 1;
         });
-        x.fillStyle = V.css("--screen-ink"); x.font = "10px " + V.css("--f-mono"); x.globalAlpha = 0.7; x.fillText("REDUCCIÓN ↓", 8, h * 0.18 + 12); x.fillText("gris = entrada · color = salida", 8, h - 8); x.globalAlpha = 1;
+        x.fillStyle = V.css("--screen-ink"); x.font = "10px " + V.css("--f-mono"); x.globalAlpha = 0.7; x.fillText(tr("REDUCCIÓN ↓"), 8, h * 0.18 + 12); x.fillText(tr("gris = entrada · color = salida"), 8, h - 8); x.globalAlpha = 1;
         grBar.style.height = Math.min(100, (-gr / 24) * 100) + "%";
         grRead.textContent = gr.toFixed(1);
       });
@@ -370,7 +370,7 @@ window.S = window.S || {};
           x.globalAlpha = 1; x.fillRect(k * bw, mid - b, bw + 0.5, b * 2);
         });
         x.strokeStyle = V.css("--hot"); x.setLineDash([4, 4]); x.beginPath(); x.moveTo(0, mid - cy); x.lineTo(w, mid - cy); x.moveTo(0, mid + cy); x.lineTo(w, mid + cy); x.stroke(); x.setLineDash([]);
-        x.fillStyle = V.css("--hot"); x.font = "10px " + V.css("--f-mono"); x.fillText("techo " + st.ceil.toFixed(1) + " dBFS", 8, Math.max(12, mid - cy - 4));
+        x.fillStyle = V.css("--hot"); x.font = "10px " + V.css("--f-mono"); x.fillText(tr("techo {n} dBFS", { n: st.ceil.toFixed(1) }), 8, Math.max(12, mid - cy - 4));
       });
 
       const S2 = (o) => U.slider(o);
@@ -448,8 +448,8 @@ window.S = window.S || {};
         b.addEventListener("click", () => {
           if (answered || !target) return; answered = true; score.total++;
           const ok = f === target;
-          if (ok) { score.ok++; score.streak++; score.best = Math.max(score.best, score.streak); b.classList.add("right"); msg.textContent = "¡Bien! Era " + V.fmtHz(target) + " Hz · " + V.bandFor(target).name + ". " + V.bandFor(target).desc; }
-          else { score.streak = 0; b.classList.add("wrong"); btns[OPTS.indexOf(target)].classList.add("right"); msg.textContent = "Era " + V.fmtHz(target) + " Hz (" + V.bandFor(target).name + "). Activá y desactivá el EQ para escuchar la diferencia."; }
+          if (ok) { score.ok++; score.streak++; score.best = Math.max(score.best, score.streak); b.classList.add("right"); msg.textContent = tr("¡Bien! Era {f} Hz · {b}.", { f: V.fmtHz(target), b: V.bandFor(target).name }) + " " + V.bandFor(target).desc; }
+          else { score.streak = 0; b.classList.add("wrong"); btns[OPTS.indexOf(target)].classList.add("right"); msg.textContent = tr("Era {f} Hz ({b}). Activá y desactivá el EQ para escuchar la diferencia.", { f: V.fmtHz(target), b: V.bandFor(target).name }); }
           U.store.set("ear", score); paintScore();
         });
         return b;
@@ -461,14 +461,14 @@ window.S = window.S || {};
         target = OPTS[Math.floor(Math.random() * OPTS.length)]; answered = false; eqOn = true; eqBtn.classList.add("on");
         pk.frequency.value = target; pk.gain.setTargetAtTime(level, c.currentTime, 0.02);
         btns.forEach((b) => { b.disabled = false; b.className = ""; });
-        msg.textContent = "¿Qué frecuencia está realzada +" + level + " dB?";
+        msg.textContent = tr("¿Qué frecuencia está realzada +{n} dB?", { n: level });
         startSrc(); play.setOn(true);
       };
       const eqBtn = el("button", { type: "button", class: "btn sm on" }, "EQ activado");
-      eqBtn.addEventListener("click", () => { eqOn = !eqOn; pk.gain.setTargetAtTime(eqOn && target ? level : 0, c.currentTime, 0.02); eqBtn.classList.toggle("on", eqOn); eqBtn.textContent = eqOn ? "EQ activado" : "EQ desactivado"; });
+      eqBtn.addEventListener("click", () => { eqOn = !eqOn; pk.gain.setTargetAtTime(eqOn && target ? level : 0, c.currentTime, 0.02); eqBtn.classList.toggle("on", eqOn); eqBtn.textContent = tr(eqOn ? "EQ activado" : "EQ desactivado"); });
       const play = U.playBtn("Escuchar", (on) => { on ? startSrc() : stopSrc(); }, "");
       const newBtn = el("button", { type: "button", class: "btn primary", onclick: round }, "Nueva ronda");
-      const srcSeg = U.seg([["pink", "Ruido rosa"], ["music", "Música"]], "pink", (v) => { src = v; if (play.textContent.includes("Detener")) startSrc(); }, "Fuente");
+      const srcSeg = U.seg([["pink", "Ruido rosa"], ["music", "Música"]], "pink", (v) => { src = v; if (play.textContent.includes(tr("Detener"))) startSrc(); }, "Fuente");
       const lvlSeg = U.seg([[12, "Fácil +12 dB"], [9, "Medio +9 dB"], [6, "Difícil +6 dB"]], 12, (v) => { level = v; if (target && eqOn) pk.gain.value = v; }, "Dificultad");
       V.loop(() => {
         const { g: x, w, h } = V.fit(cv, 200);
@@ -476,7 +476,7 @@ window.S = window.S || {};
         V.freqGrid(x, w, h, { bands: true });
         V.drawSpectrum(x, w, h, an, { fill: true, min: -110, max: -20 });
         if (answered && target) { const xx = V.fx(target, w); x.fillStyle = V.css(V.bandFor(target).v); x.globalAlpha = 0.25; x.fillRect(xx - 30, 0, 60, h); x.globalAlpha = 1; x.fillRect(xx - 1, 0, 2, h); }
-        else if (target) { x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.7; x.font = "11px " + V.css("--f-mono"); x.fillText("¿DÓNDE ESTÁ EL REALCE? Escuchá antes de mirar.", 10, 18); x.globalAlpha = 1; }
+        else if (target) { x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.7; x.font = "11px " + V.css("--f-mono"); x.fillText(tr("¿DÓNDE ESTÁ EL REALCE? Escuchá antes de mirar."), 10, 18); x.globalAlpha = 1; }
       });
       root.append(
         el("div", { class: "lab-grid" },
@@ -515,18 +515,18 @@ window.S = window.S || {};
     const osc = (o) => SC_WAVE[o.wave] + "(freq" + (vib ? " * vib" : "") + " * " + f(Math.pow(2, o.oct + o.detune / 1200)) + (o.wave === "square" ? ", 0.5" : "") + ") * " + f(o.level);
     const flt = p.filter.type === "lowpass" ? "RLPF" : p.filter.type === "highpass" ? "RHPF" : "BPF";
     const L = [];
-    L.push("// Haciendo Música: \"" + p.name + "\" como SynthDef de SuperCollider");
+    L.push("// " + tr("Haciendo Música: \"{n}\" como SynthDef de SuperCollider", { n: tr(p.name) }));
     L.push("(");
     L.push("SynthDef(\\senal, { |out = 0, freq = 220, gate = 1, amp = 0.3|");
     L.push("  var lfo = SinOsc.kr(" + f(p.lfo.rate) + ");");
-    L.push("  var vib = " + (vib ? "(lfo * " + f(p.lfo.depth) + ").midiratio; // vibrato en semitonos" : "1;"));
+    L.push("  var vib = " + (vib ? "(lfo * " + f(p.lfo.depth) + ").midiratio; // " + tr("vibrato en semitonos") : "1;"));
     L.push("  var fenv = EnvGen.kr(Env.adsr(" + [p.fenv.a, p.fenv.d, p.fenv.s, p.fenv.r].map(f).join(", ") + "), gate);");
     L.push("  var aenv = EnvGen.kr(Env.adsr(" + [p.aenv.a, p.aenv.d, p.aenv.s, p.aenv.r].map(f).join(", ") + "), gate, doneAction: 2);");
     L.push("  var cutoff = " + f(p.filter.cutoff) + " * (2 ** (fenv * " + f(p.filter.env * 6) + "))" + (p.lfo.target === "filter" && p.lfo.depth > 0 ? " * (2 ** (lfo * " + f(p.lfo.depth * 2) + "))" : "") + ";");
     L.push("  var sig = " + osc(p.osc1));
     L.push("    + (" + osc(p.osc2) + ")" + (p.noise > 0 ? "\n    + (WhiteNoise.ar * " + f(p.noise) + ")" : "") + ";");
     L.push("  sig = " + flt + ".ar(sig, cutoff.clip(20, 18000), " + f(1 / p.filter.q) + ");");
-    if (p.lfo.target === "amp" && p.lfo.depth > 0) L.push("  sig = sig * (1 - (lfo.range(0, 1) * " + f(p.lfo.depth * 0.5) + ")); // trémolo");
+    if (p.lfo.target === "amp" && p.lfo.depth > 0) L.push("  sig = sig * (1 - (lfo.range(0, 1) * " + f(p.lfo.depth * 0.5) + ")); // " + tr("trémolo"));
     L.push("  Out.ar(out, Pan2.ar(sig * aenv * amp));");
     L.push("}).add;");
     L.push(")");
@@ -542,7 +542,7 @@ window.S = window.S || {};
     const KEYS = "awsedftgyhujkolp;'";
     const whites = [], blacks = [];
     const isBlack = (m) => [1, 3, 6, 8, 10].includes(m % 12);
-    const NAMES = ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"];
+    const NAMES = S.i18n.deep(["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"]);
     const keys = new Map();
     let shift = 0;
     const total = octs * 12 + 1;
@@ -624,7 +624,7 @@ window.S = window.S || {};
         };
         drawEnv(P().aenv, V.css("--b-pres"), 16, h - 30);
         drawEnv(P().fenv, V.css("--b-himid"), 16, h - 30);
-        x.font = "10px " + V.css("--f-mono"); x.fillStyle = V.css("--b-pres"); x.fillText("AMPLITUD", 10, 12); x.fillStyle = V.css("--b-himid"); x.fillText("FILTRO", 80, 12);
+        x.font = "10px " + V.css("--f-mono"); x.fillStyle = V.css("--b-pres"); x.fillText(tr("AMPLITUD"), 10, 12); x.fillStyle = V.css("--b-himid"); x.fillText(tr("FILTRO"), 80, 12);
         x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.6; x.fillText("A · D · S · R", w - 80, 12); x.globalAlpha = 1;
       });
       const kb = L.keyboard((m) => syn.noteOn(m), (m) => syn.noteOff(m), { base: 48, octaves: 2 });
@@ -632,7 +632,7 @@ window.S = window.S || {};
       let showScale = false;
       const scaleBtn = el("button", { type: "button", class: "btn sm" }, "Marcar Fa menor");
       scaleBtn.addEventListener("click", () => { showScale = !showScale; scaleBtn.classList.toggle("on", showScale); kb.mark(showScale ? FMIN : null); });
-      const octDn = el("button", { type: "button", class: "btn sm", onclick: () => U.toast("Octava " + kb.octave(-1) / 12) }, "Oct −"), octUp = el("button", { type: "button", class: "btn sm", onclick: () => U.toast("Octava +" + kb.octave(1) / 12) }, "Oct +");
+      const octDn = el("button", { type: "button", class: "btn sm", onclick: () => U.toast(tr("Octava {n}", { n: kb.octave(-1) / 12 })) }, "Oct −"), octUp = el("button", { type: "button", class: "btn sm", onclick: () => U.toast(tr("Octava {n}", { n: "+" + kb.octave(1) / 12 })) }, "Oct +");
       const phrase = el("button", { type: "button", class: "btn sm", onclick: () => {
         const t0 = c.currentTime + 0.05, sd = 60 / 128 / 4;
         // a 2-bar hook in F minor, narrow range (Swindali: smaller ranges for the drop)
@@ -661,4 +661,5 @@ window.S = window.S || {};
       );
     },
   };
+  [L.eq, L.comp, L.master, L.ear, L.synth].forEach((d) => S.i18n.deep(d));
 })(window.S);

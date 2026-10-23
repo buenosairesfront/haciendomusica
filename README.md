@@ -4,6 +4,8 @@
 
 **7 lecciones**, **8 laboratorios interactivos**, **86 citas** de cinco libros y un **glosario de 284 términos** en 10 categorías. Todo el audio se sintetiza en vivo con Web Audio: no hay samples, no hay backend, no hay build obligatorio.
 
+**Idiomas:** español (predeterminado), English, Deutsch, 中文, 日本語 y हिन्दी. Se eligen desde la pestaña **Lang** de la barra superior o con `?lang=` en la dirección (por ejemplo `?lang=en`).
+
 > Contenido elaborado con inteligencia artificial (Claude, de Anthropic) a partir de los libros citados, con fines exclusivamente educativos. Puede contener errores o simplificaciones y no reemplaza la lectura de los originales.
 
 ## Abrir
@@ -20,7 +22,7 @@ También aparece en la landing de **Buenos Aires Front**, sección *Apps web*.
 | Documento | Para quién |
 |---|---|
 | [docs/USO.md](docs/USO.md) | Quien usa la app: secciones, lecciones, labs, enlaces directos y progreso |
-| [docs/DESARROLLO.md](docs/DESARROLLO.md) | Quien la modifica: arquitectura, router, cómo agregar citas, lecciones, términos y labs |
+| [docs/DESARROLLO.md](docs/DESARROLLO.md) | Quien la modifica: arquitectura, router, idiomas, cómo agregar citas, lecciones, términos y labs |
 | [docs/PUBLICAR.md](docs/PUBLICAR.md) | Publicación en GitHub Pages, enlaces desde la landing y build de archivo único |
 
 ## Qué hay adentro
@@ -54,6 +56,8 @@ Las citas son breves y se usan con fines educativos; los derechos pertenecen a s
 ./
   index.html
   css/app.css
+  js/i18n.js      idiomas: elección, carga del paquete y función T()
+  js/lang/*.js    paquetes de idioma (en, de, zh, ja, hi): español → traducción
   js/audio.js     motor de audio: voces de batería, groove, sintetizador
   js/viz.js       canvas, espectro, controles
   js/content.js   libros, citas y lecciones
@@ -62,7 +66,8 @@ Las citas son breves y se usan con fines educativos; los derechos pertenecen a s
   js/labs1.js     labs: beat, mezcla, arreglo
   js/labs2.js     labs: EQ, compresor, mastering, oído, síntesis
   js/app.js       router y páginas
-  build.py        empaqueta todo en un HTML
+  build.py        empaqueta todo en un HTML (con todos los idiomas)
+  tools/i18n.mjs  revisa que las traducciones estén completas
   dist/           versión de un solo archivo
   docs/           documentación
 ```

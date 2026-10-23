@@ -2,7 +2,7 @@
 window.S = window.S || {};
 (function (S) {
   const W = (S.widgets = {});
-  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz, C = S.content;
+  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz, C = S.content, tr = S.T;
 
   const box = (title, body, cap, actions) => el("figure", { class: "widget figure" },
     el("header", null, el("span", { class: "t" }, el("b", null, "●"), title), actions ? el("div", { class: "btn-row" }, actions) : null),
@@ -15,14 +15,14 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.producerDial = function () {
-    const ST = [
+    const ST = S.i18n.deep([
       ["Artista", "Se produce a sí mismo. Burgess dice que es una categoría que crece por la democratización de la grabación digital: en sus clases, buena parte de los alumnos se identifica acá.", "Les Paul, Stevie Wonder, Prince; Gotye y Calvin Harris con hits propios."],
       ["Auteur", "La fuerza creativa principal es el productor, y se nota: muchas veces compone, arregla, graba guías y hasta mezcla. Tiene un sello sonoro reconocible aunque el artista sea desconocido.", "Ideal para artistas que no componen o necesitan coautor. No tanto para una banda que quiere tocar todo."],
       ["Facilitativo", "Suele venir de la ingeniería, la programación o la música, y figura como coproductor. El artista es la fuerza creativa; el productor sostiene, facilita y maximiza sus ideas sin buscar protagonismo.", "Funciona con artistas seguros y autodirigidos que necesitan a alguien que haga avanzar el proceso."],
       ["Colaborativo", "Comparte la carga creativa como un coautor de un libro o un guion. El resultado tiene una identidad fresca: no es del todo la del artista ni la del productor.", "Burgess observa que muchísimos productores se describen así."],
       ["Habilitador", "Crea las condiciones para que una grabación ocurra: encontrar talento, material y el entorno. Es el modo histórico de producir, de cuando todo se grababa en una sola toma simultánea.", "Antes de la cinta magnética, el arte de producir era sobre todo este."],
       ["Consultivo", "Un mentor con mirada de altura y oídos frescos. Puede pasar poco tiempo en el estudio, pero aconseja, guía y alinea la visión del proyecto.", "Rick Rubin: \"Mi objetivo es correrme del camino y dejar que las personas con las que trabajo den lo mejor de sí\"."],
-    ];
+    ]);
     let pos = 0.5;
     const cv = V.canvas(110);
     const name = el("h4", { style: { margin: 0, fontFamily: "var(--f-display)", fontSize: "30px", textTransform: "uppercase", lineHeight: 1 } });
@@ -46,7 +46,7 @@ window.S = window.S || {};
       const nx = x0 + pos * (x1 - x0);
       g.fillStyle = V.css("--hot"); g.fillRect(nx - 1, 34, 3, 60);
       g.fillStyle = V.css("--screen-ink"); g.globalAlpha = 0.5; g.font = "10px " + V.css("--f-mono");
-      g.textAlign = "left"; g.fillText("← mentor con mirada externa", x0, h - 6); g.textAlign = "right"; g.fillText("el artista se produce solo →", x1, h - 6); g.textAlign = "left"; g.globalAlpha = 1;
+      g.textAlign = "left"; g.fillText(tr("← mentor con mirada externa"), x0, h - 6); g.textAlign = "right"; g.fillText(tr("el artista se produce solo →"), x1, h - 6); g.textAlign = "left"; g.globalAlpha = 1;
     };
     // Burgess draws the continuum with the consultative producer on the left and the self-producing artist on the right
     ST.reverse();
@@ -55,7 +55,7 @@ window.S = window.S || {};
     cv.addEventListener("pointerdown", (e) => { dragging = true; cv.setPointerCapture(e.pointerId); set(e); });
     cv.addEventListener("pointermove", (e) => dragging && set(e));
     cv.addEventListener("pointerup", () => { dragging = false; pos = idx() / (ST.length - 1); draw(); });
-    cv.style.cursor = "ew-resize"; cv.tabIndex = 0; cv.setAttribute("aria-label", "Dial de tipologías de productor. Usá las flechas.");
+    cv.style.cursor = "ew-resize"; cv.tabIndex = 0; cv.setAttribute("aria-label", tr("Dial de tipologías de productor. Usá las flechas."));
     cv.addEventListener("keydown", (e) => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { pos = Math.max(0, Math.min(1, (idx() + (e.key === "ArrowRight" ? 1 : -1)) / (ST.length - 1))); update(); draw(); e.preventDefault(); } });
     update(); requestAnimationFrame(draw); window.addEventListener("resize", draw);
     S.onLeave(() => window.removeEventListener("resize", draw));
@@ -64,19 +64,19 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.stages = function () {
-    const ST = [
+    const ST = S.i18n.deep([
       ["Composición", "La canción: armonía, melodía, letra, gancho. Burgess y Rick Rubin coinciden en que el material importa más que los sonidos.", "--b-sub"],
       ["Arreglo", "Qué instrumentos suenan, cuándo, y en qué orden van las secciones. Swindali: un buen balance empieza con un buen arreglo.", "--b-low"],
       ["Grabación", "Capturar las interpretaciones. Burgess: grabá siempre, aunque sea una pasada de prueba; y dejá headroom.", "--b-lowmid"],
       ["Edición", "Comping, timing, afinación, limpieza de ruidos. En MIDI: cuantizar y \"humanizar\".", "--b-mid"],
       ["Mezcla", "Balance, frecuencia, panorama, profundidad, dinámica e interés. Optimizar lo grabado, no rescatarlo.", "--b-himid"],
       ["Mastering", "Procesar la mezcla completa para que compita con temas comerciales del género. EQ, compresión y limitación.", "--b-air"],
-    ];
+    ]);
     let cur = 0;
     const detail = el("p", { style: { margin: 0, fontSize: "15.5px" } });
     const row = el("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "6px" } });
     const btns = ST.map(([n, d, c], i) => {
-      const b = el("button", { type: "button", class: "btn", style: { justifyContent: "flex-start", borderTop: "4px solid " + V.css(c), flexDirection: "column", alignItems: "flex-start", gap: "2px" } }, el("span", { class: "eyebrow" }, "Etapa " + (i + 1)), el("span", { style: { fontFamily: "var(--f-display)", fontSize: "20px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0 } }, n));
+      const b = el("button", { type: "button", class: "btn", style: { justifyContent: "flex-start", borderTop: "4px solid " + V.css(c), flexDirection: "column", alignItems: "flex-start", gap: "2px" } }, el("span", { class: "eyebrow" }, tr("Etapa {n}", { n: i + 1 })), el("span", { style: { fontFamily: "var(--f-display)", fontSize: "20px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0 } }, n));
       b.addEventListener("click", () => { cur = i; paint(); });
       return b;
     });
@@ -88,7 +88,7 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.ingredients = function () {
-    const I = [["Canción", "El material. Benny Blanco: tiene que enganchar en los primeros 10 segundos."], ["Voz", "La interpretación vocal que vende la canción."], ["Arreglo", "Orquestación y forma: qué suena y en qué orden."], ["Interpretación", "\"Si querés un gran sonido de guitarra, conseguí un gran guitarrista.\""], ["Ingeniería", "\"Las grandes canciones merecen un gran sonido.\""], ["Mezcla", "Optimizar lo grabado."], ["Actualidad", "Que suene a su tiempo."], ["Corazón", "Lo que no se mide: emoción, verdad."]];
+    const I = S.i18n.deep([["Canción", "El material. Benny Blanco: tiene que enganchar en los primeros 10 segundos."], ["Voz", "La interpretación vocal que vende la canción."], ["Arreglo", "Orquestación y forma: qué suena y en qué orden."], ["Interpretación", "\"Si querés un gran sonido de guitarra, conseguí un gran guitarrista.\""], ["Ingeniería", "\"Las grandes canciones merecen un gran sonido.\""], ["Mezcla", "Optimizar lo grabado."], ["Actualidad", "Que suene a su tiempo."], ["Corazón", "Lo que no se mide: emoción, verdad."]]);
     const list = el("div", { style: { display: "grid", gap: "5px" } });
     I.forEach(([n, d], i) => {
       const wpct = 100 - i * 10;
@@ -104,7 +104,7 @@ window.S = window.S || {};
   W.tone = function () {
     const c = () => A.ctx();
     let osc = null, gn = null, f = 440, vol = 0.15;
-    const NOTE = ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"];
+    const NOTE = S.i18n.deep(["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"]);
     const info = el("div", { class: "stat-row" });
     const cv = V.canvas(150);
     const paint = () => {
@@ -137,14 +137,14 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.systems = function () {
-    const SYS = {
+    const SYS = S.i18n.deep({
       flat: { n: "Monitores", hp: 10, ls: 0, pk: [1000, 0], hs: 0, lp: 20000, mono: 0 },
       laptop: { n: "Laptop", hp: 380, ls: 0, pk: [2400, 5], hs: 0, lp: 13000, mono: 0.5 },
       phone: { n: "Celular", hp: 650, ls: 0, pk: [3000, 6], hs: -3, lp: 9000, mono: 1 },
       buds: { n: "Auriculares baratos", hp: 110, ls: -2, pk: [3500, 3], hs: 4, lp: 16000, mono: 0 },
       car: { n: "Auto", hp: 35, ls: 7, pk: [800, -2], hs: 1, lp: 12000, mono: 0.75 },
       club: { n: "Club (mono)", hp: 30, ls: 5, pk: [3000, 2], hs: 0, lp: 16000, mono: 1 },
-    };
+    });
     let g = null, cur = "flat", nodes = null;
     const an = { a: null };
     const cv = V.canvas(170);
@@ -175,21 +175,21 @@ window.S = window.S || {};
       const s = SYS[cur];
       x.fillStyle = V.css("--hot"); x.globalAlpha = 0.18;
       x.fillRect(0, 0, V.fx(Math.max(20, s.hp), w), h); x.fillRect(V.fx(s.lp, w), 0, w, h); x.globalAlpha = 1;
-      x.fillStyle = V.css("--screen-ink"); x.font = "11px " + V.css("--f-mono"); x.fillText(s.n.toUpperCase() + (s.mono >= 1 ? " · MONO" : ""), 10, 18);
+      x.fillStyle = V.css("--screen-ink"); x.font = "11px " + V.css("--f-mono"); x.fillText(tr(s.n).toUpperCase() + (s.mono >= 1 ? " · MONO" : ""), 10, 18);
     });
     return box("¿Cómo suena tu mezcla afuera del estudio?", el("div", { style: { display: "grid", gap: "12px" } }, seg, scr(cv)), "Simulación aproximada. Las zonas rojas son lo que ese sistema casi no reproduce. Fijate qué pasa con el hi-hat y el lead (paneados) en el celular y el club.", play);
   };
 
   // ---------------------------------------------------------------
   W.spl = function () {
-    const R = [
+    const R = S.i18n.deep([
       [75, 75, "Desde ~75 dB SPL la exposición larga genera fatiga (Swindali)", "--b-mid"],
       [80, 90, "Trabajo normal: 10–15 min y 5 de descanso (Rogers)", "--b-lowmid"],
       [85, 85, "Primera pasada de mastering (Rogers)", "--b-low"],
       [90, 90, "Segunda pasada, con oídos frescos (Rogers)", "--b-himid"],
       [100, 105, "Chequeo final: solo 3–5 segundos por vez (Rogers)", "--b-pres"],
       [105, 105, "OSHA: no más de 1 hora; Rogers nunca pasa de 20 min", "--hot"],
-    ];
+    ]);
     const lo = 60, hi = 110;
     const rows = el("div", { style: { display: "grid", gap: "8px" } });
     R.forEach(([a, b, t, col]) => {
@@ -205,7 +205,7 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.kick = function () {
-    const NOTE = ["La", "La#", "Si", "Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#"];
+    const NOTE = S.i18n.deep(["La", "La#", "Si", "Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#"]);
     const st = { click: true, body: true, tail: true, semi: 0, len: 0.45 };
     const tailF = () => 55 * Math.pow(2, st.semi / 12);
     const cv = V.canvas(170);
@@ -229,7 +229,7 @@ window.S = window.S || {};
       const T = 0.6, sr = 6000, n = Math.floor(T * sr), f1 = tailF();
       const tx = (t) => (t / T) * w;
       [[0, 0.01, "--b-air", "CLICK"], [0.01, 0.15, "--b-pres", "CUERPO"], [0.15, T, "--b-sub", "COLA"]].forEach(([a, b, col, lab]) => {
-        g.fillStyle = V.css(col); g.globalAlpha = 0.14; g.fillRect(tx(a), 0, tx(b) - tx(a), h); g.globalAlpha = 0.8; g.font = "10px " + V.css("--f-mono"); g.fillText(lab, tx(a) + 4, lab === "CLICK" ? 28 : 14); g.globalAlpha = 1;
+        g.fillStyle = V.css(col); g.globalAlpha = 0.14; g.fillRect(tx(a), 0, tx(b) - tx(a), h); g.globalAlpha = 0.8; g.font = "10px " + V.css("--f-mono"); g.fillText(tr(lab), tx(a) + 4, lab === "CLICK" ? 28 : 14); g.globalAlpha = 1;
       });
       let ph = 0; g.beginPath();
       for (let i = 0; i < n; i++) {
@@ -326,12 +326,12 @@ window.S = window.S || {};
       g.strokeStyle = V.css("--screen-grid"); g.font = "10px " + V.css("--f-mono"); g.fillStyle = V.css("--screen-ink");
       for (let s = 0; s <= T; s += 15) { const x = tx(s); g.globalAlpha = s % 60 ? 0.3 : 0.8; g.fillRect(x, h - 26, 1, s % 60 ? 6 : 12); if (s % 30 === 0) g.fillText(Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"), x - 10, h - 6); }
       g.globalAlpha = 1;
-      const mark = (s, label, col, y) => { const x = tx(s); g.fillStyle = V.css(col); g.fillRect(x - 1, y, 2, h - 28 - y); g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); g.font = "600 11px " + V.css("--f-mono"); g.fillText(label, Math.min(x + 6, w - g.measureText(label).width - 6), y + 4); };
+      const mark = (s, label, col, y) => { const x = tx(s); g.fillStyle = V.css(col); g.fillRect(x - 1, y, 2, h - 28 - y); g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); g.font = "600 11px " + V.css("--f-mono"); label = tr(label); g.fillText(label, Math.min(x + 6, w - g.measureText(label).width - 6), y + 4); };
       mark(10, "10 s: enganchar (Benny Blanco)", "--b-air", 18);
       mark(15, "intro < 15 s", "--b-pres", 40);
       mark(30, "30 s: el oyente decide", "--b-himid", 62);
       mark(60, "primer estribillo < 1:00", "--accent", 84);
-      g.fillStyle = V.css("--screen-ink"); g.globalAlpha = 0.75; g.font = "10px " + V.css("--f-mono"); g.fillText("DURACIÓN TÍPICA 2:30–3:30", tx(150) + 4, 14); g.fillText("después del minuto: cambios cada 4 compases →", tx(64), 108); g.globalAlpha = 1;
+      g.fillStyle = V.css("--screen-ink"); g.globalAlpha = 0.75; g.font = "10px " + V.css("--f-mono"); g.fillText(tr("DURACIÓN TÍPICA 2:30–3:30"), tx(150) + 4, 14); g.fillText(tr("después del minuto: cambios cada 4 compases →"), tx(64), 108); g.globalAlpha = 1;
     };
     requestAnimationFrame(draw); window.addEventListener("resize", draw); S.onLeave(() => window.removeEventListener("resize", draw));
     return box("Anatomía de un hit (Swindali, cap. 6; Burgess, cap. 4)", scr(cv), "Son guías sacadas del análisis de listas de éxitos, no leyes. En la electrónica de club la intro es más larga porque está pensada para el DJ.");
@@ -339,7 +339,7 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.energy = function () {
-    const SEC = [["Intro", 16, 0.35, "--b-low"], ["Breakdown", 8, 0.3, "--b-lowmid"], ["Build-up", 8, 0.6, "--b-himid"], ["Drop", 16, 1, "--b-pres"], ["Breakdown", 8, 0.3, "--b-lowmid"], ["Build-up", 8, 0.65, "--b-himid"], ["Drop 2", 16, 1, "--b-pres"], ["Outro", 16, 0.4, "--b-sub"]];
+    const SEC = S.i18n.deep([["Intro", 16, 0.35, "--b-low"], ["Breakdown", 8, 0.3, "--b-lowmid"], ["Build-up", 8, 0.6, "--b-himid"], ["Drop", 16, 1, "--b-pres"], ["Breakdown", 8, 0.3, "--b-lowmid"], ["Build-up", 8, 0.65, "--b-himid"], ["Drop 2", 16, 1, "--b-pres"], ["Outro", 16, 0.4, "--b-sub"]]);
     const cv = V.canvas(170);
     const draw = () => {
       const { g, w, h } = V.fit(cv, 170);
@@ -349,7 +349,7 @@ window.S = window.S || {};
       SEC.forEach(([n, bars, e, col], i) => {
         const ww = (bars / total) * w;
         g.fillStyle = V.css(col); g.globalAlpha = 0.2; g.fillRect(x, 0, ww - 2, h); g.globalAlpha = 1;
-        g.fillStyle = V.css("--screen-ink"); g.font = "600 10px " + V.css("--f-mono"); g.fillText(n.toUpperCase(), x + 4, 14); g.globalAlpha = 0.6; g.fillText(bars + " comp.", x + 4, 27); g.globalAlpha = 1;
+        g.fillStyle = V.css("--screen-ink"); g.font = "600 10px " + V.css("--f-mono"); g.fillText(tr(n).toUpperCase(), x + 4, 14); g.globalAlpha = 0.6; g.fillText(tr("{n} comp.", { n: bars }), x + 4, 27); g.globalAlpha = 1;
         const y0 = h - 10 - e * (h - 50);
         if (n.startsWith("Build")) { pts.push([x, h - 10 - 0.3 * (h - 50)]); pts.push([x + ww, h - 10 - 0.95 * (h - 50)]); }
         else if (n === "Outro") { pts.push([x, y0]); pts.push([x + ww, h - 10 - 0.1 * (h - 50)]); }
@@ -367,7 +367,7 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.dimensions = function () {
-    const P = [["Bombo", 0, 0.08, 0.05, "--b-sub", 18], ["Bajo", 0, 0.16, 0.1, "--b-low", 16], ["Caja", 0.05, 0.45, 0.2, "--b-mid", 13], ["Voz", 0, 0.55, 0.05, "--accent", 15], ["Hi-hat", 0.45, 0.92, 0.3, "--b-air", 10], ["Lead", -0.4, 0.68, 0.3, "--b-pres", 12], ["Pad", 0.6, 0.45, 0.8, "--b-lowmid", 14], ["Pad", -0.6, 0.45, 0.8, "--b-lowmid", 14], ["Reverb", 0, 0.6, 1, "--b-himid", 9]];
+    const P = S.i18n.deep([["Bombo", 0, 0.08, 0.05, "--b-sub", 18], ["Bajo", 0, 0.16, 0.1, "--b-low", 16], ["Caja", 0.05, 0.45, 0.2, "--b-mid", 13], ["Voz", 0, 0.55, 0.05, "--accent", 15], ["Hi-hat", 0.45, 0.92, 0.3, "--b-air", 10], ["Lead", -0.4, 0.68, 0.3, "--b-pres", 12], ["Pad", 0.6, 0.45, 0.8, "--b-lowmid", 14], ["Pad", -0.6, 0.45, 0.8, "--b-lowmid", 14], ["Reverb", 0, 0.6, 1, "--b-himid", 9]]);
     let yaw = -0.6, pitch = 0.35;
     const cv = V.canvas(300);
     const draw = () => {
@@ -379,14 +379,14 @@ window.S = window.S || {};
       const E = [[[-1, -1, -1], [1, -1, -1]], [[-1, -1, 1], [1, -1, 1]], [[-1, 1, -1], [1, 1, -1]], [[-1, 1, 1], [1, 1, 1]], [[-1, -1, -1], [-1, 1, -1]], [[1, -1, -1], [1, 1, -1]], [[-1, -1, 1], [-1, 1, 1]], [[1, -1, 1], [1, 1, 1]], [[-1, -1, -1], [-1, -1, 1]], [[1, -1, -1], [1, -1, 1]], [[-1, 1, -1], [-1, 1, 1]], [[1, 1, -1], [1, 1, 1]]];
       g.strokeStyle = V.css("--screen-grid"); g.lineWidth = 1;
       E.forEach(([a, b]) => { const p = pr(...a), q = pr(...b); g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); });
-      const ax = (a, b, lab, col) => { const p = pr(...a), q = pr(...b); g.strokeStyle = V.css(col); g.lineWidth = 2; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); g.fillStyle = V.css(col); g.font = "600 11px " + V.css("--f-mono"); g.fillText(lab, q[0] + 6, q[1]); };
+      const ax = (a, b, lab, col) => { const p = pr(...a), q = pr(...b); g.strokeStyle = V.css(col); g.lineWidth = 2; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); g.fillStyle = V.css(col); g.font = "600 11px " + V.css("--f-mono"); g.fillText(tr(lab), q[0] + 6, q[1]); };
       ax([-1, -1, -1], [1, -1, -1], "ANCHO · paneo", "--b-himid");
       ax([-1, -1, -1], [-1, 1, -1], "ALTO · frecuencia", "--b-air");
       ax([-1, -1, -1], [-1, -1, 1], "PROFUNDIDAD · reverb", "--b-lowmid");
       P.map((p) => ({ p, q: pr(p[1], p[2] * 2 - 1, p[3] * 2 - 1) })).sort((a, b) => b.q[2] - a.q[2]).forEach(({ p, q }) => {
         const r = p[5] * (1 - p[3] * 0.3);
         g.fillStyle = V.css(p[4]); g.globalAlpha = 0.9; g.beginPath(); g.arc(q[0], q[1], r, 0, 7); g.fill(); g.globalAlpha = 1;
-        g.fillStyle = V.css("--screen-ink"); g.font = "10px " + V.css("--f-mono"); g.fillText(p[0], q[0] + r + 3, q[1] + 3);
+        g.fillStyle = V.css("--screen-ink"); g.font = "10px " + V.css("--f-mono"); g.fillText(tr(p[0]), q[0] + r + 3, q[1] + 3);
       });
     };
     let drag = null;
@@ -426,7 +426,7 @@ window.S = window.S || {};
       return bt;
     });
     const info = el("p", { style: { margin: 0, fontSize: "14.5px", minHeight: "2.6em" } });
-    const paint = () => { btns.forEach((b, i) => b.classList.toggle("on", i === solo)); const b = BANDS[solo]; info.innerHTML = b ? "<strong>" + b.name + " · " + V.fmtHz(b.from) + "–" + V.fmtHz(b.to) + " Hz.</strong> " + b.desc : "Mezcla completa. Elegí una banda para escucharla sola."; };
+    const paint = () => { btns.forEach((b, i) => b.classList.toggle("on", i === solo)); const b = BANDS[solo]; info.innerHTML = b ? "<strong>" + tr(b.name) + " · " + V.fmtHz(b.from) + "–" + V.fmtHz(b.to) + " Hz.</strong> " + tr(b.desc) : tr("Mezcla completa. Elegí una banda para escucharla sola."); };
     paint();
     const play = U.playBtn("Escuchar", (on) => { ensure(); if (on) { exclusive(() => { g.stop(); play.setOn(false); }); apply(); g.start(); } else g.stop(); });
     V.loop(() => {
@@ -435,7 +435,7 @@ window.S = window.S || {};
       BANDS.forEach((b, i) => { const x0 = V.fx(b.from, w), x1 = V.fx(b.to, w); x.fillStyle = V.css(b.v); x.globalAlpha = solo === i ? 0.32 : 0.1; x.fillRect(x0, 0, x1 - x0 - 1, h); x.globalAlpha = 1; x.fillRect(x0, 0, x1 - x0 - 1, 3); });
       V.freqGrid(x, w, h);
       if (an) V.drawSpectrum(x, w, h, an, { fill: false, min: -105, max: -20 });
-      (notes || []).forEach(([f0, f1, t], k) => { const a = V.fx(f0, w), b = V.fx(f1, w); x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.85; x.fillRect(a, 22 + k * 15, Math.max(2, b - a), 3); x.font = "10px " + V.css("--f-mono"); x.fillText(t, Math.min(a, w - 150), 34 + k * 15); x.globalAlpha = 1; });
+      (notes || []).forEach(([f0, f1, t], k) => { const a = V.fx(f0, w), b = V.fx(f1, w); x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.85; x.fillRect(a, 22 + k * 15, Math.max(2, b - a), 3); x.font = "10px " + V.css("--f-mono"); x.fillText(tr(t), Math.min(a, w - 150), 34 + k * 15); x.globalAlpha = 1; });
     });
     return box(title, el("div", { style: { display: "grid", gap: "10px" } }, el("div", { class: "btn-row" }, btns), scr(cv), info), cap, play);
   };
@@ -450,7 +450,7 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.gain = function () {
-    const STEPS = [["Todo en silencio", [], "Master a 0 dB, todos los canales silenciados."], ["Bombo a −6 dB", ["kick"], "El canal más importante primero, picando cerca de −6 dB."], ["+ Bajo", ["kick", "bass"], "Sumalo escuchando con el bombo, no en solo."], ["+ Clap y hats", ["kick", "bass", "clap", "hat"], "Batería completa."], ["+ Pad y lead", ["kick", "bass", "clap", "hat", "pad", "lead"], "Todo sonando: el master debería seguir en −6 dB o menos."]];
+    const STEPS = S.i18n.deep([["Todo en silencio", [], "Master a 0 dB, todos los canales silenciados."], ["Bombo a −6 dB", ["kick"], "El canal más importante primero, picando cerca de −6 dB."], ["+ Bajo", ["kick", "bass"], "Sumalo escuchando con el bombo, no en solo."], ["+ Clap y hats", ["kick", "bass", "clap", "hat"], "Batería completa."], ["+ Pad y lead", ["kick", "bass", "clap", "hat", "pad", "lead"], "Todo sonando: el master debería seguir en −6 dB o menos."]]);
     let g = null, an = null, step = 0, ph = -99, pt = 0;
     const lvl = { kick: -2, bass: -4, clap: -8, hat: -14, pad: -10, lead: -11 };
     const meter = el("i", { style: { height: "0%" } }), read = el("span", { class: "big-read" }, "–∞"), desc = el("p", { style: { margin: 0, fontSize: "15px" } });
@@ -500,7 +500,7 @@ window.S = window.S || {};
       [0.8, 0.65, 0.5, 0.4].forEach((p) => { g.strokeStyle = p === thr ? V.css("--hot") : V.css("--screen-grid"); g.lineWidth = p === thr ? 2 : 1; g.setLineDash(p === thr ? [] : [3, 4]); g.beginPath(); g.moveTo(0, mid - p * A0); g.lineTo(w, mid - p * A0); g.stroke(); g.setLineDash([]); g.fillStyle = p === thr ? V.css("--hot") : V.css("--screen-ink"); g.font = "10px " + V.css("--f-mono"); g.fillText(Math.round(p * 100) + "%", w - 34, mid - p * A0 - 3); });
     };
     const info = el("p", { class: "mono", style: { margin: 0, fontSize: "13px" } });
-    const upd = () => { info.textContent = "Umbral " + Math.round(thr * 100) + "% de la onda ≈ " + (20 * Math.log10(thr)).toFixed(1) + " dB bajo el pico · ratio " + ratio + ":1"; draw(); };
+    const upd = () => { info.textContent = tr("Umbral {p}% de la onda ≈ {d} dB bajo el pico · ratio {r}:1", { p: Math.round(thr * 100), d: (20 * Math.log10(thr)).toFixed(1), r: ratio }); draw(); };
     const tseg = U.seg([[0.8, "80% cortar la punta"], [0.65, "65%"], [0.5, "50% leve"], [0.4, "40%"]], 0.5, (v) => { thr = v; upd(); }, "Umbral");
     const rseg = U.seg([[2, "2:1"], [3, "3:1"], [4, "4:1"], [5, "5:1"], [8, "8:1"], [30, "30:1"]], 4, (v) => { ratio = v; upd(); }, "Ratio");
     requestAnimationFrame(upd); window.addEventListener("resize", draw); S.onLeave(() => window.removeEventListener("resize", draw));
@@ -509,7 +509,7 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.replaygain = function () {
-    const Z = [[96, 97, "Mínimo (solo si el cliente insiste)", "--b-low"], [97, 98, "Rock clásico, jazz, clásica, bandas sonoras, infantil", "--b-lowmid"], [98, 98.5, "Pop, dance, EDM, country, R&B, reggae", "--b-pres"], [99, 99.5, "Hip hop, rap, hard rock, metal", "--b-himid"], [100, 100.5, "Máximo absoluto, a pedido", "--hot"], [101, 102, "Límite matemático: suele sonar mal", "--muted"]];
+    const Z = S.i18n.deep([[96, 97, "Mínimo (solo si el cliente insiste)", "--b-low"], [97, 98, "Rock clásico, jazz, clásica, bandas sonoras, infantil", "--b-lowmid"], [98, 98.5, "Pop, dance, EDM, country, R&B, reggae", "--b-pres"], [99, 99.5, "Hip hop, rap, hard rock, metal", "--b-himid"], [100, 100.5, "Máximo absoluto, a pedido", "--hot"], [101, 102, "Límite matemático: suele sonar mal", "--muted"]]);
     const lo = 95.5, hi = 102.5;
     const bar = el("div", { style: { position: "relative", height: "46px", background: "var(--panel-2)", borderRadius: "6px", overflow: "hidden" } });
     Z.forEach(([a, b, t, col]) => bar.append(el("i", { title: t, style: { position: "absolute", left: ((a - lo) / (hi - lo)) * 100 + "%", width: Math.max(2.5, ((b - a) / (hi - lo)) * 100) + "%", top: 0, bottom: 0, background: V.css(col) } })));
@@ -533,7 +533,7 @@ window.S = window.S || {};
           if (squash) a = Math.tanh(a * 3.2) / Math.tanh(3.2) * 0.98;
           x.fillStyle = V.css(col); x.fillRect(ox + i, mid - a * A0, 1, a * A0 * 2);
         }
-        x.fillStyle = V.css("--screen-ink"); x.font = "600 11px " + V.css("--f-mono"); x.fillText(label, ox + 4, 14);
+        x.fillStyle = V.css("--screen-ink"); x.font = "600 11px " + V.css("--f-mono"); x.fillText(tr(label), ox + 4, 14);
       };
       wave(0, false, "--b-low", "DINÁMICO");
       wave(w / 2 + 6, true, "--hot", "APLASTADO");
@@ -578,12 +578,12 @@ window.S = window.S || {};
       g.strokeStyle = V.css(left <= 0 ? "--ok" : "--b-pres"); g.lineCap = "round"; g.beginPath(); g.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (1 - left / total) * Math.PI * 2); g.stroke(); g.lineCap = "butt";
       read.textContent = fmt(left);
     };
-    const done = () => { running = false; st.days[today()] = true; U.store.set("timer", st); paintGrid(); U.toast("¡Sesión cumplida! Hoy suma al desafío."); try { const c = A.ctx(); [0, 0.25, 0.5].forEach((d, i) => A.voices.tone(A.master, c.currentTime + d, [523, 659, 784][i], 0.3, "sine", 0.15)); } catch (e) {} startB.textContent = "Empezar"; };
+    const done = () => { running = false; st.days[today()] = true; U.store.set("timer", st); paintGrid(); U.toast("¡Sesión cumplida! Hoy suma al desafío."); try { const c = A.ctx(); [0, 0.25, 0.5].forEach((d, i) => A.voices.tone(A.master, c.currentTime + d, [523, 659, 784][i], 0.3, "sine", 0.15)); } catch (e) {} startB.textContent = tr("Empezar"); };
     V.loop((ts) => { if (running) { if (last) left = Math.max(0, left - (ts - last) / 1000); last = ts; if (left <= 0) done(); } else last = 0; draw(); });
     const startB = el("button", { type: "button", class: "btn primary" }, "Empezar");
-    startB.addEventListener("click", () => { if (left <= 0) left = total; running = !running; startB.textContent = running ? "Pausa" : "Seguir"; });
-    const reset = el("button", { type: "button", class: "btn sm", onclick: () => { running = false; left = total; startB.textContent = "Empezar"; } }, "Reiniciar");
-    const seg = U.seg([[15, "15 min"], [30, "30 min (recompromiso)"], [10, "10 min"]], 15, (m) => { total = m * 60; left = total; running = false; startB.textContent = "Empezar"; }, "Duración");
+    startB.addEventListener("click", () => { if (left <= 0) left = total; running = !running; startB.textContent = tr(running ? "Pausa" : "Seguir"); });
+    const reset = el("button", { type: "button", class: "btn sm", onclick: () => { running = false; left = total; startB.textContent = tr("Empezar"); } }, "Reiniciar");
+    const seg = U.seg([[15, "15 min"], [30, "30 min (recompromiso)"], [10, "10 min"]], 15, (m) => { total = m * 60; left = total; running = false; startB.textContent = tr("Empezar"); }, "Duración");
     paintGrid();
     return box("Temporizador de sesión · desafío de 30 días", el("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", alignItems: "center" } },
       el("div", { style: { position: "relative" } }, cv, el("div", { style: { position: "absolute", inset: 0, display: "grid", placeItems: "center" } }, read)),
@@ -593,13 +593,13 @@ window.S = window.S || {};
 
   // ---------------------------------------------------------------
   W.session = function () {
-    const ST = [["Visualizar", "Imaginá el tema terminado y bien recibido.", 0], ["Organizarse", "Plantilla con pistas, envíos de reverb y delay, niveles revisados, escritorio limpio.", 0.15], ["Crear libre", "Tocá, probá, grabá todo. Sin juzgar.", 0], ["Copiar, pegar, borrar", "Quedate o cortá cada idea rápido, por instinto.", 0.5], ["Arreglar", "Ordená las secciones. Si te trabás, copiá la estructura de otro tema.", 0.7], ["Rellenar huecos", "FX, EQ, limpieza.", 0.85], ["Mezclar", "Empezando por batería y bajo.", 1]];
+    const ST = S.i18n.deep([["Visualizar", "Imaginá el tema terminado y bien recibido.", 0], ["Organizarse", "Plantilla con pistas, envíos de reverb y delay, niveles revisados, escritorio limpio.", 0.15], ["Crear libre", "Tocá, probá, grabá todo. Sin juzgar.", 0], ["Copiar, pegar, borrar", "Quedate o cortá cada idea rápido, por instinto.", 0.5], ["Arreglar", "Ordená las secciones. Si te trabás, copiá la estructura de otro tema.", 0.7], ["Rellenar huecos", "FX, EQ, limpieza.", 0.85], ["Mezclar", "Empezando por batería y bajo.", 1]]);
     let cur = 2;
     const row = el("div", { style: { display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: "4px" } });
     const detail = el("p", { style: { margin: 0, fontSize: "15px" } });
     const btns = ST.map(([n], i) => { const b = el("button", { type: "button", style: { border: "1px solid var(--line)", borderRadius: "4px", padding: "8px 4px", cursor: "pointer", fontSize: "11.5px", fontFamily: "var(--f-mono)", lineHeight: 1.25, minHeight: "64px", color: "var(--ink)" } }, String(i + 1), el("br"), n); b.addEventListener("click", () => { cur = i; paint(); }); return b; });
     row.append(...btns);
-    const paint = () => { btns.forEach((b, i) => { const j = ST[i][2]; b.style.background = "color-mix(in srgb, var(--b-pres) " + Math.round((1 - j) * 30) + "%, color-mix(in srgb, var(--b-low) " + Math.round(j * 30) + "%, var(--panel)))"; b.style.outline = i === cur ? "2px solid var(--ink)" : "none"; }); detail.innerHTML = "<strong>" + ST[cur][0] + ".</strong> " + ST[cur][1] + " <span style=\"color:var(--muted)\">· " + (ST[cur][2] < 0.4 ? "modo creativo" : "modo crítico") + "</span>"; };
+    const paint = () => { btns.forEach((b, i) => { const j = ST[i][2]; b.style.background = "color-mix(in srgb, var(--b-pres) " + Math.round((1 - j) * 30) + "%, color-mix(in srgb, var(--b-low) " + Math.round(j * 30) + "%, var(--panel)))"; b.style.outline = i === cur ? "2px solid var(--ink)" : "none"; }); detail.innerHTML = "<strong>" + ST[cur][0] + ".</strong> " + ST[cur][1] + " <span style=\"color:var(--muted)\">· " + tr(ST[cur][2] < 0.4 ? "modo creativo" : "modo crítico") + "</span>"; };
     paint();
     const legend = el("div", { class: "mono", style: { display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--muted)" } }, el("span", null, "← jugar, generar"), el("span", null, "juzgar, ordenar →"));
     return box("Una sesión en siete pasos (Music Habits)", el("div", { style: { display: "grid", gap: "10px" } }, row, legend, detail), "El orden importa: si juzgás mientras creás, frenás las dos cosas.");

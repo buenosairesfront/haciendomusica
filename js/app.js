@@ -1,7 +1,11 @@
 /* Haciendo Música — estructura, router y páginas */
 window.S = window.S || {};
 (function (S) {
-  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz, C = S.content, L = S.labs, W = S.widgets;
+  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz, C = S.content, L = S.labs, W = S.widgets, T = S.T, LANG = S.i18n.lang;
+
+  // contenido en el idioma elegido (en inglés, las citas se muestran en su versión original)
+  if (LANG === "en") Object.values(C.QUOTES).forEach((q) => (q.es = q.en));
+  S.i18n.deep(C);
 
   // cleanup registry for route changes
   let leaves = [];
@@ -18,7 +22,7 @@ window.S = window.S || {};
   const progress = U.store.get("progress", {});
   const setDone = (id) => { progress[id] = true; U.store.set("progress", progress); paintProgress(); };
   const progPill = el("span", { class: "progress-pill" });
-  const paintProgress = () => { const n = C.LESSONS.filter((l) => progress[l.id]).length; progPill.textContent = n + "/" + C.LESSONS.length + " lecciones"; };
+  const paintProgress = () => { const n = C.LESSONS.filter((l) => progress[l.id]).length; progPill.innerHTML = "<b>" + n + "/" + C.LESSONS.length + "</b><span> " + T("lecciones") + "</span>"; };
 
   // ------------------------------------------------------------------ icons
   const I = (d, extra) => '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"' + (extra || "") + ">" + d + "</svg>";
@@ -53,19 +57,24 @@ window.S = window.S || {};
     const qd = C.QUOTES[id]; if (!qd) return null;
     const b = C.BOOKS[qd.b];
     return el("figure", { class: "quote", style: { "--qc": b.color } },
-      el("blockquote", null, "«" + qd.es + "»"),
-      compact ? null : el("div", { class: "orig", lang: "en" }, "“" + qd.en + "”"),
+      el("blockquote", null, T("«{q}»", { q: qd.es })),
+      compact || LANG === "en" ? null : el("div", { class: "orig", lang: "en" }, "“" + qd.en + "”"),
       el("figcaption", null, el("b", null, b.author), " · ", el("i", null, b.title), " · " + qd.where));
   };
 
   // ------------------------------------------------------------------ shell
   const NAV = [["", "Inicio", IC.home], ["lecciones", "Lecciones", IC.book], ["lab", "Laboratorio", IC.lab], ["bibliografia", "Bibliografía", IC.shelf], ["glosario", "Glosario", IC.abc]];
-  const navLinks = NAV.map(([h, t, ic]) => el("a", { href: "#" + h, html: ic + "<span>" + t + "</span>" }));
+  const navLinks = NAV.map(([h, t, ic]) => el("a", { href: "#" + h, html: ic + "<span>" + T(t) + "</span>" }));
   const brand = el("a", { class: "brand", href: "#", html: '<svg class="brand-mark" viewBox="0 0 40 30" aria-hidden="true"><rect x="1.5" y="1.5" width="37" height="27" rx="7" fill="#ee3a2c" stroke="#121212" stroke-width="2.5"/><path d="M6 15h5l2-6 3 12 3-15 3 13 2-4h10" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg><b>Haciendo Música</b>' });
   const searchIn = el("input", { type: "search", id: "topsearch", placeholder: "Buscar en el glosario: sidechain, LUFS, reverb…", "aria-label": "Buscar en el glosario" });
   searchIn.addEventListener("keydown", (e) => { if (e.key === "Enter") { S.glossQuery = searchIn.value; if (location.hash === "#glosario") route(); else location.hash = "glosario"; } });
-  const header = el("header", { class: "topbar" }, el("div", { class: "bar" }, brand, el("label", { class: "searchbox", html: IC.search }, searchIn), progPill));
-  const sideCard = el("a", { class: "side-card", href: "#lab-beat", html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2 6 6-2-4 5 5 4-6 1 1 6-4-4-4 4 1-6-6-1 5-4-4-5 6 2z" fill="#121212" stroke="#121212" stroke-width="1"/></svg><b>Armá tu primer beat</b><span>→</span>' });
+  // pestaña de idioma: siempre visible en la barra superior
+  const langMenu = el("details", { class: "lang" },
+    el("summary", { "aria-label": "Lang", html: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><span>Lang</span><b>' + LANG.toUpperCase() + "</b>" }),
+    el("div", { class: "lang-menu" }, S.i18n.LANGS.map(([c, name]) => el("button", { type: "button", lang: c, "aria-current": c === LANG ? "true" : null, onclick: () => S.i18n.set(c) }, el("b", null, c.toUpperCase()), name))));
+  document.addEventListener("click", (e) => { if (langMenu.open && !langMenu.contains(e.target)) langMenu.open = false; });
+  const header = el("header", { class: "topbar" }, el("div", { class: "bar" }, brand, el("label", { class: "searchbox", html: IC.search }, searchIn), langMenu, progPill));
+  const sideCard = el("a", { class: "side-card", href: "#lab-beat", html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2 6 6-2-4 5 5 4-6 1 1 6-4-4-4 4 1-6-6-1 5-4-4-5 6 2z" fill="#121212" stroke="#121212" stroke-width="1"/></svg><b>' + T("Armá tu primer beat") + '</b><span>→</span>' });
   const side = el("aside", { class: "side" }, el("nav", { class: "nav", "aria-label": "Secciones" }, navLinks), sideCard);
   const main = el("main", { id: "main" });
   const DISCLAIMER = "Contenido elaborado con inteligencia artificial (Claude, de Anthropic) a partir de esos libros, con fines exclusivamente educativos. Puede contener errores o simplificaciones: no reemplaza la lectura de los libros originales. Las citas son breves y sus derechos pertenecen a los autores y editoriales.";
@@ -98,7 +107,7 @@ window.S = window.S || {};
     const totalMin = C.LESSONS.reduce((a, l) => a + l.mins, 0);
     const tile = (cls, ic, lab, val, sub, href) => el("a", { class: "stat-tile " + cls, href }, el("span", { class: "ic", html: ic }), el("span", { class: "lab" }, lab), el("span", { class: "val" }, val), el("span", { class: "sub" }, sub));
     dash.append(el("div", { class: "stats" },
-      tile("y", IC.book, "Lecciones", String(C.LESSONS.length), totalMin + " min de lectura", "#lecciones"),
+      tile("y", IC.book, "Lecciones", String(C.LESSONS.length), T("{n} min de lectura", { n: totalMin }), "#lecciones"),
       tile("b", IC.lab, "Laboratorios", String(LABS.length), "todo suena en vivo", "#lab"),
       tile("g", IC.quote, "Citas", String(Object.keys(C.QUOTES).length), "de 5 libros", "#bibliografia"),
       tile("r", IC.abc, "Glosario", String(C.GLOSSARY.length), "términos explicados", "#glosario")));
@@ -112,17 +121,17 @@ window.S = window.S || {};
       g.strokeStyle = "#121212"; g.lineWidth = 3; g.beginPath();
       for (let x = 0; x <= w; x++) { const y = h * 0.42 - Math.sin(x / w * Math.PI * 5) * h * 0.16 * Math.sin(x / w * Math.PI); x ? g.lineTo(x, y) : g.moveTo(x, y); }
       g.stroke();
-      g.fillStyle = "#fff"; g.font = "italic 800 " + Math.round(h * 0.2) + "px " + V.css("--f-display"); g.fillText("Lección " + nl.n, 12, h - 14);
+      g.fillStyle = "#fff"; g.font = "italic 800 " + Math.round(h * 0.2) + "px " + V.css("--f-display"); g.fillText(T("Lección {n}", { n: nl.n }), 12, h - 14);
     });
-    const act = (ic, t, href) => el("a", { href, html: '<span class="ai">' + ic + "</span><span>" + t + '</span><span class="chev">' + IC.chev + "</span>" });
+    const act = (ic, t, href) => el("a", { href, html: '<span class="ai">' + ic + "</span><span>" + T(t) + '</span><span class="chev">' + IC.chev + "</span>" });
     dash.append(el("section", { class: "card feat" },
       el("div", { class: "card-h" }, el("h3", null, progress[nl.id] ? "Para repasar" : "Tu próxima lección")),
-      el("a", { class: "thumb", href: "#leccion-" + nl.id, "aria-label": "Abrir " + nl.title }, thumb, el("span", { class: "pl" }, el("i", { html: IC.play }))),
-      el("h3", null, nl.title), el("div", { class: "meta" }, nl.mins + " min · " + nl.sources.length + " libros · " + nl.kicker),
+      el("a", { class: "thumb", href: "#leccion-" + nl.id, "aria-label": T("Abrir {t}", { t: nl.title }) }, thumb, el("span", { class: "pl" }, el("i", { html: IC.play }))),
+      el("h3", null, nl.title), el("div", { class: "meta" }, T("{m} min · {b} libros", { m: nl.mins, b: nl.sources.length }) + " · " + nl.kicker),
       el("div", { class: "act-list" },
         act(IC.book, "Leer la lección", "#leccion-" + nl.id),
         act(IC.lab, "Abrir su laboratorio", "#lab-" + (nl.labs[0] || "beat")),
-        act(IC.edit, "Cuestionario (" + nl.quiz.length + " preguntas)", "#leccion-" + nl.id),
+        act(IC.edit, T("Cuestionario ({n} preguntas)", { n: nl.quiz.length }), "#leccion-" + nl.id),
         act(IC.dots, "Ver todas las lecciones", "#lecciones"))));
 
     // live spectrum chart + band energy
@@ -177,7 +186,7 @@ window.S = window.S || {};
     });
 
     // tools
-    const tl = (ic, t, href) => el("a", { href, html: '<span class="ti">' + ic + "</span><span>" + t + "</span>" });
+    const tl = (ic, t, href) => el("a", { href, html: '<span class="ti">' + ic + "</span><span>" + T(t) + "</span>" });
     dash.append(el("section", { class: "card tools" },
       el("div", { class: "card-h" }, el("h3", null, "Herramientas")),
       tl(IC.grid, "Caja de ritmos", "#lab-beat"), tl(IC.target, "Mezcla en 3D", "#lab-mix"), tl(IC.sliders, "Ecualizador", "#lab-eq"),
@@ -191,8 +200,8 @@ window.S = window.S || {};
       list.append(el("a", { class: "ll-row", href: "#leccion-" + l.id },
         el("span", { class: "n" }, String(l.n)),
         el("span", { class: "th" }, cv, el("b", null, l.kicker)),
-        el("span", null, el("h4", null, l.title), el("span", { class: "m" }, l.mins + " min · " + l.sources.length + " libros")),
-        el("span", { class: "st", style: { color: progress[l.id] ? V.css("--ok") : V.css("--ink") } }, progress[l.id] ? "Leída ✓" : "Nueva", el("small", null, l.quiz.length + " preguntas"))));
+        el("span", null, el("h4", null, l.title), el("span", { class: "m" }, T("{m} min · {b} libros", { m: l.mins, b: l.sources.length }))),
+        el("span", { class: "st", style: { color: progress[l.id] ? V.css("--ok") : V.css("--ink") } }, progress[l.id] ? "Leída ✓" : "Nueva", el("small", null, T("{n} preguntas", { n: l.quiz.length })))));
     });
     dash.append(list);
 
@@ -202,7 +211,7 @@ window.S = window.S || {};
     ["h_wins", "b_museum", "e_drop1st", "r_loudplay", "m_dull"].forEach((id) => {
       const q = C.QUOTES[id], b = C.BOOKS[q.b];
       feed.append(el("div", { class: "qf-row" }, el("span", { class: "av", style: { background: b.color } }, AUTH[q.b]),
-        el("div", null, el("div", { class: "who" }, b.author, el("span", null, b.title)), el("p", null, "«" + q.es + "»"),
+        el("div", null, el("div", { class: "who" }, b.author, el("span", null, b.title)), el("p", null, T("«{q}»", { q: q.es })),
           el("div", { class: "ft" }, el("span", null, q.where), el("a", { href: "#bibliografia" }, "Ver el libro")))));
     });
     dash.append(feed);
@@ -235,7 +244,7 @@ window.S = window.S || {};
     requestAnimationFrame(() => V.waveIcon(cv, l.wave, V.css("--ink")));
     return el("a", { class: "module-card" + (progress[l.id] ? " done" : ""), href: "#leccion-" + l.id, style: { "--mc": V.css(l.color) } },
       cv, el("span", { class: "num" }, String(l.n).padStart(2, "0")), el("h3", null, l.title), el("p", null, l.lede),
-      el("div", { class: "meta" }, el("span", null, l.mins + " min · " + l.sources.length + " libros"), progress[l.id] ? el("span", { class: "done-chip", html: U.icon.check + " leída" }) : el("span", null, l.kicker)));
+      el("div", { class: "meta" }, el("span", null, T("{m} min · {b} libros", { m: l.mins, b: l.sources.length })), progress[l.id] ? el("span", { class: "done-chip", html: U.icon.check + " " + T("leída") }) : el("span", null, l.kicker)));
   }));
 
   const labGrid = () => el("div", { class: "labs" }, LABS.map(([id]) => {
@@ -273,10 +282,10 @@ window.S = window.S || {};
       else if (b.t === "quote") body.append(quoteEl(b.id));
       else if (b.t === "list") body.append(el("ul", null, b.items.map((i) => el("li", null, i))));
       else if (b.t === "widget") { try { body.append(W[b.w](b.opts)); } catch (e) { console.error(b.w, e); } }
-      else if (b.t === "case") body.append(el("section", { class: "callout case" }, el("header", null, el("span", { class: "dot" }), "Caso práctico · " + b.title), el("div", { html: b.html })));
+      else if (b.t === "case") body.append(el("section", { class: "callout case" }, el("header", null, el("span", { class: "dot" }), T("Caso práctico") + " · " + b.title), el("div", { html: b.html })));
       else if (b.t === "tip") body.append(el("section", { class: "callout tip" }, el("header", null, el("span", { class: "dot" }), b.title), el("div", { html: b.html })));
       else if (b.t === "deep") body.append(el("details", { class: "deep" }, el("summary", null, b.title), el("div", { html: b.html })));
-      else if (b.t === "lab") { const d = labDef(b.id); body.append(el("a", { class: "lab-card", href: "#lab-" + b.id, style: { "--lc": V.css(d.color), margin: "28px 0", fontFamily: "var(--f-ui)" } }, el("span", { class: "tag" }, "Ir al laboratorio · " + d.tag), el("h3", null, d.title + " →"), el("p", null, b.text))); }
+      else if (b.t === "lab") { const d = labDef(b.id); body.append(el("a", { class: "lab-card", href: "#lab-" + b.id, style: { "--lc": V.css(d.color), margin: "28px 0", fontFamily: "var(--f-ui)" } }, el("span", { class: "tag" }, T("Ir al laboratorio") + " · " + T(d.tag)), el("h3", null, T(d.title) + " →"), el("p", null, b.text))); }
     });
     const quiz = el("section", { class: "quiz" }, el("h2", null, "Comprobá lo que aprendiste"));
     toc.append(el("a", { href: "#leccion-" + l.id, onclick: (e) => { e.preventDefault(); quiz.scrollIntoView({ behavior: "smooth" }); } }, "Cuestionario"));
@@ -291,8 +300,8 @@ window.S = window.S || {};
           if (answered.has(qi)) return; answered.add(qi);
           if (oi === qq.a) score++;
           opts.forEach((x, k) => { if (k === qq.a) x.classList.add("right"); else if (k === oi) x.classList.add("wrong"); x.disabled = true; });
-          why.hidden = false; why.textContent = (oi === qq.a ? "Correcto. " : "No exactamente. ") + qq.why;
-          if (answered.size === l.quiz.length) { result.textContent = score + " de " + l.quiz.length + " correctas · lección marcada como leída"; setDone(l.id); }
+          why.hidden = false; why.textContent = T(oi === qq.a ? "Correcto." : "No exactamente.") + " " + qq.why;
+          if (answered.size === l.quiz.length) { result.textContent = T("{s} de {n} correctas · lección marcada como leída", { s: score, n: l.quiz.length }); setDone(l.id); }
         });
         return b;
       });
@@ -307,7 +316,7 @@ window.S = window.S || {};
     root.append(
       el("header", { class: "lesson-head" },
         el("div", { class: "num" }, String(l.n).padStart(2, "0")),
-        el("div", { class: "eyebrow" }, "Lección " + l.n + " · " + l.kicker + " · " + l.mins + " min"),
+        el("div", { class: "eyebrow" }, T("Lección {n}", { n: l.n }) + " · " + l.kicker + " · " + l.mins + " min"),
         el("h1", null, l.title), el("p", { class: "lede" }, l.lede),
         el("div", { class: "sources" }, l.sources.map((s) => el("span", { class: "src-chip" }, C.BOOKS[s].author + " · " + C.BOOKS[s].title)))),
       el("div", { class: "lesson-layout" }, toc, body));
@@ -326,11 +335,11 @@ window.S = window.S || {};
     const qd = C.QUOTES[LAB_QUOTE[id]], b = qd && C.BOOKS[qd.b];
     root.append(labTabs(id),
       el("div", { class: "lab-head" },
-        el("div", null, el("div", { class: "eyebrow" }, "Lab · " + d.tag), el("h1", null, d.title), el("p", null, d.desc)),
-        les ? el("a", { class: "btn", href: "#leccion-" + les.id }, "Lección " + les.n + ": " + les.title) : null),
-      qd ? el("p", { class: "lab-quote", style: { "--qc": b.color } }, "«" + qd.es + "» ", el("span", null, "— " + b.author)) : null);
+        el("div", null, el("div", { class: "eyebrow" }, "Lab · " + T(d.tag)), el("h1", null, d.title), el("p", null, d.desc)),
+        les ? el("a", { class: "btn", href: "#leccion-" + les.id }, T("Lección {n}", { n: les.n }) + ": " + les.title) : null),
+      qd ? el("p", { class: "lab-quote", style: { "--qc": b.color } }, T("«{q}»", { q: qd.es }) + " ", el("span", null, "— " + b.author)) : null);
     const host = el("div"); root.append(host);
-    try { d.render(host); } catch (e) { console.error(e); host.append(el("p", null, "No se pudo iniciar el audio en este navegador: " + e.message)); }
+    try { d.render(host); } catch (e) { console.error(e); host.append(el("p", null, T("No se pudo iniciar el audio en este navegador:") + " " + e.message)); }
   };
 
   P.bibliography = (root) => {
@@ -346,7 +355,7 @@ window.S = window.S || {};
       const n = Object.values(C.QUOTES).filter((q) => q.b === k).length;
       const b = el("button", { type: "button", class: "book", "aria-pressed": "false" },
         el("div", { class: "cover", style: { "--bk": bk.color }, html: '<span class="ct">' + bk.title + '</span><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30 ' + Array.from({ length: 20 }, (_, i) => "Q" + (i * 10 + 5) + " " + (30 + (i % 2 ? -1 : 1) * (8 + ((i * 7 + k.length * 3) % 18))) + " " + (i * 10 + 10) + " 30").join(" ") + '" fill="none" stroke="#fff" stroke-width="2"/></svg><span class="ca">' + bk.author + "</span>" }),
-        el("span", { class: "bt" }, bk.sub + " · " + n + " citas"));
+        el("span", { class: "bt" }, bk.sub + " · " + T("{n} citas", { n })));
       b.addEventListener("click", () => { filter = filter === k ? null : k; btns.forEach(([kk, bb]) => bb.setAttribute("aria-pressed", String(kk === filter))); paint(); });
       covers.append(b);
       return [k, b];
@@ -355,7 +364,7 @@ window.S = window.S || {};
       about.replaceChildren();
       if (filter) { const bk = C.BOOKS[filter]; about.append(el("section", { class: "callout", style: { "--cc": bk.color, marginTop: "28px" } }, el("header", { style: { color: "#fff" } }, el("span", { class: "dot", style: { background: "#fff" } }), bk.author + " · " + bk.title), el("div", null, el("p", null, bk.about)))); }
       const list = Object.entries(C.QUOTES).filter(([, q]) => (!filter || q.b === filter) && (!term || (q.es + " " + q.en + " " + q.where).toLowerCase().includes(term)));
-      grid.replaceChildren(...(list.length ? list.map(([id]) => quoteEl(id)) : [el("p", null, "No hay citas con \"" + term + "\". Probá con otra palabra.")]));
+      grid.replaceChildren(...(list.length ? list.map(([id]) => quoteEl(id)) : [el("p", null, T("No hay citas con \"{t}\". Probá con otra palabra.", { t: term }))]));
     };
     paint();
     root.append(covers, about, el("div", { class: "filter-row" }, search), grid, el("p", { class: "disclaimer", style: { marginTop: "32px" } }, DISCLAIMER));
@@ -378,19 +387,25 @@ window.S = window.S || {};
     const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
     const paint = () => {
       const t = norm(search.value.trim());
-      const list = C.GLOSSARY.filter(([a, c, d]) => (!cat || c === cat) && (!t || norm(a + " " + d).includes(t))).sort((x, y) => norm(x[0]).localeCompare(norm(y[0])));
-      count.textContent = list.length + " de " + C.GLOSSARY.length + " términos";
+      const list = C.GLOSSARY.filter(([a, c, d]) => (!cat || c === cat) && (!t || norm(a + " " + d).includes(t))).sort((x, y) => norm(x[0]).localeCompare(norm(y[0]), LANG));
+      count.textContent = T("{n} de {t} términos", { n: list.length, t: C.GLOSSARY.length });
+      // alfabetos latinos: índice A–Z; chino, japonés e hindi: agrupado por categoría
       const groups = {};
-      list.forEach((it) => { const L0 = norm(it[0])[0].toUpperCase(); const k = /[A-Z]/.test(L0) ? L0 : "#"; (groups[k] = groups[k] || []).push(it); });
-      az.replaceChildren(..."#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((ch) => groups[ch] ? el("a", { href: "#glosario", onclick: (e) => { e.preventDefault(); const t2 = document.getElementById("g-" + ch); t2 && t2.scrollIntoView({ behavior: "smooth" }); } }, ch) : el("span", null, ch)));
-      out.replaceChildren(...(list.length ? Object.keys(groups).sort().flatMap((ch) => [
-        el("h2", { class: "g-letter", id: "g-" + ch }, ch),
+      const keyOf = S.i18n.latin ? (it) => { const L0 = norm(it[0])[0].toUpperCase(); return /[A-Z]/.test(L0) ? L0 : "#"; } : (it) => it[1];
+      list.forEach((it) => { const k = keyOf(it); (groups[k] = groups[k] || []).push(it); });
+      const keys = S.i18n.latin ? "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("") : CATS.map((c) => c.id);
+      const label = (k) => (S.i18n.latin ? k : catOf(k).name);
+      const jump = (k) => el("a", { href: "#glosario", onclick: (e) => { e.preventDefault(); const t2 = document.getElementById("g-" + k); t2 && t2.scrollIntoView({ behavior: "smooth" }); } }, label(k));
+      az.hidden = !S.i18n.latin; // sin A–Z: los chips de categoría ya cumplen esa función
+      az.replaceChildren(...keys.filter((k) => S.i18n.latin || groups[k]).map((k) => (groups[k] ? jump(k) : el("span", null, k))));
+      out.replaceChildren(...(list.length ? keys.filter((k) => groups[k]).flatMap((ch) => [
+        el("h2", { class: "g-letter", id: "g-" + ch }, label(ch)),
         el("div", { class: "gloss" }, groups[ch].map(([a, c, d, labId]) => {
           const cc = catOf(c);
           return el("article", { class: "term", style: { "--cc": V.css(cc.color) } }, el("span", { class: "tc" }, cc.name), el("h3", null, a), el("p", null, d),
             labId ? el("span", { class: "also" }, "Probalo en ", el("a", { href: "#lab-" + labId }, labDef(labId).title)) : null);
         })),
-      ]) : [el("p", null, "No hay términos con \"" + search.value + "\". Probá con otra palabra o elegí \"Todas\".")]));
+      ]) : [el("p", null, T("No hay términos con \"{t}\". Probá con otra palabra o elegí \"Todas\".", { t: search.value }))]));
     };
     search.addEventListener("input", paint);
     paint();

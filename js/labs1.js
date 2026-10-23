@@ -2,10 +2,11 @@
 window.S = window.S || {};
 (function (S) {
   const L = (S.labs = S.labs || {});
-  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz;
+  const { el } = S.ui, U = S.ui, A = S.audio, V = S.viz, tr = S.T;
 
   const TC = { kick: "--b-sub", snare: "--b-mid", clap: "--b-himid", hat: "--b-air", bass: "--b-low", pad: "--b-lowmid", lead: "--b-pres", fx: "--hot" };
   const TN = { kick: "Bombo", snare: "Caja", clap: "Clap", hat: "Hi-hat", bass: "Bajo", pad: "Pad", lead: "Lead", fx: "FX / Riser" };
+  S.i18n.deep(TN);
   L.TC = TC; L.TN = TN;
   const P = (s) => s.split("").map((c) => (c === "x" ? 1 : c === "o" ? 2 : 0));
   const Z = "................";
@@ -32,8 +33,8 @@ window.S = window.S || {};
     for (let bar = 0; bar < 4; bar++) for (let i = 0; i < 16; i++) bassNotes.push(pattern.bass[i] ? roots[bar] : "Rest()");
     const on = (k) => !mutes[k] && pattern[k] && pattern[k].some((v) => v);
     let s = "";
-    s += "// Haciendo Música: patrón exportado a SuperCollider\n";
-    s += "// 1) Evaluá el primer bloque (Cmd/Ctrl+Enter) 2) Evaluá el segundo para tocar\n(\n";
+    s += "// " + tr("Haciendo Música: patrón exportado a SuperCollider") + "\n";
+    s += "// " + tr("1) Evaluá el primer bloque (Cmd/Ctrl+Enter) 2) Evaluá el segundo para tocar") + "\n(\n";
     s += "TempoClock.default.tempo = " + bpm + " / 60;\n\n";
     s += "SynthDef(\\kick, { |out = 0, amp = 0.9|\n  var env = EnvGen.ar(Env.perc(0.004, 0.45), doneAction: 2);\n  var freq = EnvGen.ar(Env([160, 48, 40], [0.11, 0.3], \\exp));\n  Out.ar(out, (SinOsc.ar(freq) * env * amp) ! 2);\n}).add;\n\n";
     s += "SynthDef(\\snare, { |out = 0, amp = 0.6|\n  var noise = HPF.ar(WhiteNoise.ar, 1200) * EnvGen.ar(Env.perc(0.001, 0.2), doneAction: 2);\n  var body = LFTri.ar(XLine.ar(220, 160, 0.1)) * EnvGen.ar(Env.perc(0.001, 0.12));\n  Out.ar(out, ((noise + body) * amp) ! 2);\n}).add;\n\n";
@@ -44,8 +45,8 @@ window.S = window.S || {};
     if (on("snare")) s += "Pdef(\\s, Pbind(\\instrument, \\snare, \\dur, 1/4, \\amp, " + seq(pattern.snare, 0.6) + ")).play(quant: 4);\n";
     if (on("clap")) s += "Pdef(\\c, Pbind(\\instrument, \\clap, \\dur, 1/4, \\amp, " + seq(pattern.clap, 0.6) + ")).play(quant: 4);\n";
     if (on("hat")) s += "Pdef(\\h, Pbind(\\instrument, \\hat, \\dur, 1/4, \\amp, " + seq(pattern.hat, 0.3) + ")).play(quant: 4);\n";
-    if (on("bass")) s += "// Bajo: tónicas de Am – F – C – G, un compás cada una\nPdef(\\b, Pbind(\\instrument, \\bass, \\dur, 1/4, \\legato, 1.7,\n  \\midinote, Pseq([" + bassNotes.join(", ") + "], inf))).play(quant: 4);\n";
-    s += ")\n\n// Para frenar: Pdef.all.do(_.stop);";
+    if (on("bass")) s += "// " + tr("Bajo: tónicas de Am – F – C – G, un compás cada una") + "\nPdef(\\b, Pbind(\\instrument, \\bass, \\dur, 1/4, \\legato, 1.7,\n  \\midinote, Pseq([" + bassNotes.join(", ") + "], inf))).play(quant: 4);\n";
+    s += ")\n\n// " + tr("Para frenar:") + " Pdef.all.do(_.stop);";
     return s;
   };
   L.hl = function (code) {
@@ -91,7 +92,7 @@ window.S = window.S || {};
         row.append(muteBtn);
         cells[r] = [];
         for (let i = 0; i < 16; i++) {
-          const c = el("button", { type: "button", class: "cell" + (i % 4 === 0 ? " beat" : ""), "aria-label": TN[r] + " paso " + (i + 1), style: { "--rc": V.css(TC[r]) } });
+          const c = el("button", { type: "button", class: "cell" + (i % 4 === 0 ? " beat" : ""), "aria-label": tr("{t} paso {n}", { t: TN[r], n: i + 1 }), style: { "--rc": V.css(TC[r]) } });
           c.addEventListener("click", () => { g.pattern[r][i] = g.pattern[r][i] ? 0 : 1; paint(); sc.refresh(); });
           cells[r].push(c); row.append(c);
         }
@@ -106,12 +107,12 @@ window.S = window.S || {};
         const b = el("button", { type: "button", class: "btn sm" + (gn === genre ? " on" : "") }, gn.name + " · " + gn.bpm);
         b.addEventListener("click", () => {
           genre = gn; g.pattern = L.patternFrom(gn); g.bpm = gn.bpm; bpm.set(gn.bpm, true);
-          gBtns.forEach((x) => x.classList.toggle("on", x === b)); info.textContent = "Rango típico según Swindali: " + gn.range + " BPM"; paint(); sc.refresh();
+          gBtns.forEach((x) => x.classList.toggle("on", x === b)); info.textContent = tr("Rango típico según Swindali: {r} BPM", { r: gn.range }); paint(); sc.refresh();
         });
         return b;
       });
       genreSeg.append(...gBtns);
-      const info = el("p", { class: "eyebrow", style: { margin: 0 } }, "Rango típico según Swindali: " + genre.range + " BPM");
+      const info = el("p", { class: "eyebrow", style: { margin: 0 } }, tr("Rango típico según Swindali: {r} BPM", { r: genre.range }));
 
       const bpm = U.slider({ label: "Tempo", min: 60, max: 180, step: 1, value: 128, unit: " BPM", onInput: (v) => { g.bpm = v; sc.refresh(); } });
       const swing = U.slider({ label: "Swing", min: 0, max: 0.6, step: 0.01, value: 0, fmt: (v) => Math.round(v * 100) + "%", onInput: (v) => (g.swing = v) });
@@ -154,7 +155,7 @@ window.S = window.S || {};
         c.strokeStyle = V.css("--screen-ink"); c.lineWidth = 2; c.stroke();
         if (nowStep >= 0 && g.playing) { c.fillStyle = V.css("--accent"); c.fillRect(nowStep * stepW, 0, 2, h); }
         c.fillStyle = V.css("--screen-ink"); c.font = "10px " + V.css("--f-mono"); c.globalAlpha = 0.7;
-        c.fillText("VOLUMEN DE BAJO + PAD (1 COMPÁS)", 8, 12); c.globalAlpha = 1;
+        c.fillText(tr("VOLUMEN DE BAJO + PAD (1 COMPÁS)"), 8, 12); c.globalAlpha = 1;
       });
 
       const sc = L.codePanel("Ver este patrón en SuperCollider", () => L.scPattern(g.pattern, Math.round(g.bpm), g.mutes));
@@ -235,7 +236,7 @@ window.S = window.S || {};
       names.forEach(apply);
 
       // ----- stage canvas -----
-      const stageCv = V.canvas(340); stageCv.setAttribute("role", "img"); stageCv.setAttribute("aria-label", "Escenario de mezcla: paneo y profundidad de cada instrumento");
+      const stageCv = V.canvas(340); stageCv.setAttribute("role", "img"); stageCv.setAttribute("aria-label", tr("Escenario de mezcla: paneo y profundidad de cada instrumento"));
       const stage = el("div", { class: "stage screen" }, stageCv);
       const geom = (w, h) => ({ top: 44, bot: h - 58, wTop: w * 0.42, wBot: w * 0.92 });
       const posOf = (s, w, h) => { const G = geom(w, h); const y = G.bot - s.depth * (G.bot - G.top); const ww = G.wBot + (G.wTop - G.wBot) * s.depth; return { x: w / 2 + s.pan * ww / 2, y }; };
@@ -270,7 +271,7 @@ window.S = window.S || {};
         for (let i = 0; i <= 6; i++) { const d = i / 6, y = G.bot - d * (G.bot - G.top), ww = G.wBot + (G.wTop - G.wBot) * d; x.beginPath(); x.moveTo(w / 2 - ww / 2, y); x.lineTo(w / 2 + ww / 2, y); x.stroke(); }
         for (let i = -4; i <= 4; i++) { const p = i / 4; x.beginPath(); x.moveTo(w / 2 + p * G.wBot / 2, G.bot); x.lineTo(w / 2 + p * G.wTop / 2, G.top); x.stroke(); }
         x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.6; x.font = "10px " + V.css("--f-mono");
-        x.fillText("FONDO · más reverb, menos agudos", 10, 16); x.fillText("FRENTE · seco y presente", 10, h - 10);
+        x.fillText(tr("FONDO · más reverb, menos agudos"), 10, 16); x.fillText(tr("FRENTE · seco y presente"), 10, h - 10);
         x.textAlign = "right"; x.fillText("L ◀   ▶ R", w - 10, h - 10); x.textAlign = "left"; x.globalAlpha = 1;
         // listener
         x.fillStyle = V.css("--screen-ink"); x.beginPath(); x.arc(w / 2, h - 4, 5, 0, 7); x.fill();
@@ -300,14 +301,14 @@ window.S = window.S || {};
           x.globalAlpha = 1; x.fillStyle = V.css("--screen-ink"); x.font = "10px " + V.css("--f-mono"); x.fillText(TN[n], 4, y + rowH / 2 + 2);
         });
         x.strokeStyle = V.css("--hot"); x.setLineDash([4, 4]); const x200 = V.fx(200, w); x.beginPath(); x.moveTo(x200, 0); x.lineTo(x200, h - 16); x.stroke(); x.setLineDash([]);
-        x.fillStyle = V.css("--hot"); x.fillText("200 Hz: debajo, en mono", x200 + 4, 12);
+        x.fillStyle = V.css("--hot"); x.fillText(tr("200 Hz: debajo, en mono"), x200 + 4, 12);
         // master meter
         const { peak } = V.rms(an); const db = A.gainToDb(peak);
         if (db > peakHold || ts - holdT > 1500) { peakHold = db; holdT = ts; }
         meterBar.style.height = Math.max(0, Math.min(100, ((db + 48) / 48) * 100)) + "%";
         peakRead.textContent = peakHold < -90 ? "–∞" : peakHold.toFixed(1);
         peakRead.style.color = peakHold > -6 ? V.css("--warn") : V.css("--ink");
-        peakNote.textContent = peakHold > -6 ? "Pasaste los −6 dB: dejá margen (headroom) para el mastering" : "Pico del master (dBFS) · objetivo ≤ −6 dB";
+        peakNote.textContent = tr(peakHold > -6 ? "Pasaste los −6 dB: dejá margen (headroom) para el mastering" : "Pico del master (dBFS) · objetivo ≤ −6 dB");
       });
 
       // ----- channel strips -----
@@ -365,6 +366,7 @@ window.S = window.S || {};
     intro: { name: "Intro", col: "--b-low" }, break: { name: "Breakdown", col: "--b-lowmid" }, build: { name: "Build-up", col: "--b-himid" },
     drop: { name: "Drop", col: "--b-pres" }, outro: { name: "Outro", col: "--b-sub" }, main: { name: "Main", col: "--b-mid" }, peak: { name: "Peak", col: "--b-air" },
   };
+  S.i18n.deep(SECT);
   const ROWS = ["kick", "clap", "hat", "bass", "pad", "lead", "fx"];
   const W = { kick: 3, clap: 1.4, hat: 1.2, bass: 3, pad: 1.5, lead: 2.6, fx: 1.4 };
   const layersFor = (type, k, n) => {
@@ -384,6 +386,7 @@ window.S = window.S || {};
     habits: { name: "Club según Music Habits", note: "Intro 8–16 · Bass drop 32 · Breakdown 4–8 · Main 32–64 · Breakdown corto · Peak 32–64 · Outro 8–16", secs: [["intro", 16], ["drop", 32], ["break", 8], ["main", 32], ["build", 4], ["peak", 32], ["outro", 16]] },
     loop: { name: "Solo el loop (16 compases)", note: "Así suena un loop que nunca se convierte en canción.", secs: [["drop", 16]] },
   };
+  S.i18n.deep(TEMPLATES);
   L.arrange = {
     title: "Arreglo", tag: "Estructura · Energía", color: "--b-pres",
     desc: "Convertí un loop en un tema: secciones, capas que entran y salen, y la curva de energía.",
@@ -416,14 +419,14 @@ window.S = window.S || {};
         while (i < n) {
           let j = i; while (j < n && blocks[j].si === blocks[i].si) j++;
           const sec = SECT[blocks[i].type];
-          head.append(el("div", { class: "arr-sec" + (cur >= i && cur < j ? " now" : ""), style: { gridColumn: "span " + (j - i), borderTop: "3px solid " + V.css(sec.col) }, title: sec.name + " · " + (j - i) * 4 + " compases" }, sec.name + " " + (j - i) * 4));
+          head.append(el("div", { class: "arr-sec" + (cur >= i && cur < j ? " now" : ""), style: { gridColumn: "span " + (j - i), borderTop: "3px solid " + V.css(sec.col) }, title: sec.name + " · " + tr("{n} compases", { n: (j - i) * 4 }) }, sec.name + " " + (j - i) * 4));
           i = j;
         }
         grid.append(head);
         ROWS.forEach((r) => {
           const row = el("div", { class: "arr-row", style: { gridTemplateColumns: cols } }, el("span", { class: "arr-name" }, TN[r]));
           blocks.forEach((b, bi) => {
-            const cell = el("button", { type: "button", class: "arr-cell" + (b.on.has(r) ? " on" : ""), "aria-label": TN[r] + " bloque " + (bi + 1), style: { "--rc": V.css(TC[r]), outline: bi === cur ? "2px solid " + V.css("--ink") : "none" } });
+            const cell = el("button", { type: "button", class: "arr-cell" + (b.on.has(r) ? " on" : ""), "aria-label": tr("{t} bloque {n}", { t: TN[r], n: bi + 1 }), style: { "--rc": V.css(TC[r]), outline: bi === cur ? "2px solid " + V.css("--ink") : "none" } });
             cell.addEventListener("click", () => { b.on.has(r) ? b.on.delete(r) : b.on.add(r); renderGrid(); });
             row.append(cell);
           });
@@ -463,7 +466,7 @@ window.S = window.S || {};
         const barSec = (4 * 60) / g.bpm, x60 = (60 / (barSec * 4)) * bw;
         if (x60 < w) { x.strokeStyle = V.css("--warn"); x.setLineDash([3, 3]); x.beginPath(); x.moveTo(x60, 0); x.lineTo(x60, h); x.stroke(); x.setLineDash([]); x.fillStyle = V.css("--warn"); x.font = "10px " + V.css("--f-mono"); x.fillText("1:00", x60 + 4, 12); }
         if (cur >= 0) { x.fillStyle = V.css("--screen-ink"); x.fillRect(cur * bw, 0, 2, h); }
-        x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.7; x.font = "10px " + V.css("--f-mono"); x.fillText("ENERGÍA", 8, 14); x.globalAlpha = 1;
+        x.fillStyle = V.css("--screen-ink"); x.globalAlpha = 0.7; x.font = "10px " + V.css("--f-mono"); x.fillText(tr("ENERGÍA"), 8, 14); x.globalAlpha = 1;
       });
 
       // playback
@@ -515,4 +518,5 @@ window.S = window.S || {};
       );
     },
   };
+  [L.beat, L.mix, L.arrange].forEach((d) => S.i18n.deep(d));
 })(window.S);

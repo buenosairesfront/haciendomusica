@@ -17,6 +17,7 @@ Todos los scripts cuelgan de un único objeto global `window.S` y se cargan en e
 
 | Archivo | Expone | Responsabilidad |
 |---|---|---|
+| `js/i18n.js` | `S.i18n`, `S.T` | Idioma activo, carga del paquete de idioma y de la tipografía, función de traducción `T()`. Va primero. |
 | `js/audio.js` | `S.audio` | Motor Web Audio: contexto, master + analizador, buffers de ruido, reverb, voces de batería (`kick`, `snare`, `clap`, `hat`…), `Groove` (secuenciador) y sintetizador. Todo se sintetiza en vivo, no hay samples. |
 | `js/viz.js` | `S.viz`, `S.ui` | Canvas, espectro, bandas de frecuencia, helpers de DOM (`el`), íconos, `toast` y `store` (envoltorio de `localStorage` con prefijo `senal:`). |
 | `js/content.js` | `S.content` | Libros (`BOOKS`), citas (`QUOTES`), lecciones (`LESSONS`) y hábitos (`HABITS`). |
@@ -100,14 +101,63 @@ La categoría tiene que existir en `C.GLOSS_CATS`. El cuarto elemento es opciona
 
 Agregá `W.nombre = function (opts) { ... return nodo; }` en `widgets.js` y usala en una lección con `w("nombre")`.
 
+## Idiomas
+
+El español es el idioma fuente: todo el texto se escribe en español directamente en el código y en el contenido. Cada idioma es un paquete en `js/lang/<código>.js` (`en`, `de`, `zh`, `ja`, `hi`) con un diccionario que va **del texto en español a su traducción**:
+
+```js
+(S.i18nPacks = S.i18nPacks || {}).en = {
+  "Lecciones": "Lessons",
+  "Lección {n}": "Lesson {n}",
+  ...
+};
+```
+
+### Cómo funciona
+
+- `js/i18n.js` decide el idioma: primero `?lang=` en la dirección, después lo guardado en `localStorage` (`senal:lang`), y si no hay nada, español. Pone `<html lang>`, carga **solo** el paquete de ese idioma y, para chino, japonés e hindi, la Noto Sans correspondiente.
+- `S.T(texto, vars)` devuelve la traducción (o el mismo texto si falta) y reemplaza `{variables}`.
+- `el()` (en `viz.js`) traduce solo: los textos hijos, el atributo `html` y `title`, `placeholder` y `aria-label`. Por eso la mayoría del texto no necesita nada especial.
+- Los datos (lecciones, citas, glosario, bandas, presets…) se traducen con `S.i18n.deep(objeto)`, que recorre la estructura y reemplaza cada texto.
+- La pestaña **Lang** llama a `S.i18n.set(código)`, que recarga la página con `?lang=`.
+- En inglés las citas se muestran en su versión original (no hace falta traducirlas).
+
+### Al escribir código nuevo
+
+| Caso | Qué hacer |
+|---|---|
+| Texto fijo dentro de `el(...)` | Nada: se traduce solo. |
+| Texto armado con variables | Usar una plantilla: `T("Lección {n}", { n })`, nunca `"Lección " + n`. |
+| `textContent`, `innerHTML` o `fillText` en un canvas | Pasar el texto por `T()` (en labs y widgets se llama `tr`). |
+| Datos nuevos (arrays u objetos con texto) | Envolverlos en `S.i18n.deep(...)` o traducir al usarlos. |
+
+### Agregar o cambiar traducciones
+
+```sh
+cd tools && npm install && cd ..
+node tools/i18n.mjs check         # cuántos textos faltan en cada idioma
+node tools/i18n.mjs missing en    # escribe tools/pendientes-en.json con lo que falta
+node tools/i18n.mjs keys          # lista completa de textos en español
+```
+
+`check` también avisa si una traducción no conserva las `{variables}` del original. Los textos que faltan se muestran en español, así que la app nunca se rompe por una traducción incompleta. Después de editar un paquete, regenerá `dist/` con `python3 build.py`.
+
+Si cambiás un texto en español, cambia la clave: hay que actualizar esa entrada en los cinco paquetes (`check` lo marca como faltante).
+
+### Agregar un idioma
+
+1. Sumarlo a `LANGS` en `js/i18n.js` (y a `FONTS` si usa otra escritura).
+2. Crear `js/lang/<código>.js` con el mismo formato.
+3. Agregar el código a `LANGS` en `tools/i18n.mjs` y correr `check`.
+
 ## Estilos
 
-`css/app.css` define todos los colores y medidas como variables en `:root` (paleta amarilla, azul, verde y roja con bordes negros gruesos y sombras duras). Los colores de las bandas de frecuencia son `--b-sub`, `--b-low`, `--b-lowmid`, `--b-mid`, `--b-himid`, `--b-pres` y `--b-air`; las lecciones, labs y categorías del glosario los referencian por nombre.
+`css/app.css` define todos los colores y medidas como variables en `:root` (paleta amarilla, azul, verde y roja con bordes negros gruesos y sombras duras). Los colores de las bandas de frecuencia son `--b-sub`, `--b-low`, `--b-lowmid`, `--b-mid`, `--b-himid`, `--b-pres` y `--b-air`; las lecciones, labs y categorías del glosario los referencian por nombre. Al final del archivo están la pestaña Lang y los ajustes por idioma (tipografías y altura de línea para chino, japonés e hindi).
 
 ## Build de un solo archivo
 
 ```sh
-python3 build.py              # dist/haciendo-musica.html (autocontenido, se abre con doble clic)
+python3 build.py              # dist/haciendo-musica.html (autocontenido, con todos los idiomas, se abre con doble clic)
 python3 build.py --fragment   # dist/haciendo-musica-fragment.html (solo head+body, para publicar como artefacto de Claude)
 ```
 
@@ -116,6 +166,8 @@ python3 build.py --fragment   # dist/haciendo-musica-fragment.html (solo head+bo
 ## Checklist antes de publicar
 
 - [ ] La consola del navegador no muestra errores en inicio, en una lección y en cada lab.
+- [ ] `node tools/i18n.mjs check` da todos los idiomas completos.
+- [ ] Probado al menos en español y en un idioma de otra escritura (`?lang=ja` o `?lang=hi`).
 - [ ] El audio arranca tras el primer clic y se detiene al cambiar de página.
 - [ ] Se ve bien a 360 px de ancho (celular) sin scroll horizontal.
 - [ ] `python3 build.py` corre y `dist/haciendo-musica.html` abre igual que la versión en carpetas.

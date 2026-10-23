@@ -1,0 +1,8 @@
+{
+  "name": "haciendomusica-tools",
+  "private": true,
+  "description": "Herramientas de mantenimiento (traducciones). La app no las necesita para funcionar.",
+  "type": "module",
+  "scripts": { "i18n": "node i18n.mjs" },
+  "dependencies": { "acorn": "^8.12.1", "acorn-walk": "^8.3.4" }
+}

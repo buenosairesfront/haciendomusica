@@ -4,6 +4,23 @@ Haciendo Música es una escuela visual de producción musical que corre entera e
 
 **Abrir:** https://buenosairesfront.github.io/haciendomusica/
 
+## Idioma
+
+La app está en **español** por defecto y también en **English, Deutsch, 中文 (chino), 日本語 (japonés) y हिन्दी (hindi)**. La pestaña **Lang** está siempre visible en la barra superior (a la derecha, también en el celular): tocala y elegí el idioma. La página se recarga en el idioma elegido y queda recordado en ese navegador.
+
+También se puede abrir directamente en un idioma agregando `?lang=` a la dirección:
+
+| Idioma | Dirección |
+|---|---|
+| Español | `https://buenosairesfront.github.io/haciendomusica/` |
+| English | `https://buenosairesfront.github.io/haciendomusica/?lang=en` |
+| Deutsch | `https://buenosairesfront.github.io/haciendomusica/?lang=de` |
+| 中文 | `https://buenosairesfront.github.io/haciendomusica/?lang=zh` |
+| 日本語 | `https://buenosairesfront.github.io/haciendomusica/?lang=ja` |
+| हिन्दी | `https://buenosairesfront.github.io/haciendomusica/?lang=hi` |
+
+Se traduce todo: menús, lecciones, cuestionarios, labs, glosario y los comentarios del código que se exporta a SuperCollider. Las citas de los libros se muestran en el idioma elegido con el original en inglés debajo (en inglés, solo el original). Los títulos de los libros y los nombres de sus capítulos quedan en inglés, como en las ediciones originales. En chino, japonés e hindi el glosario se agrupa por categoría en lugar de A–Z.
+
 > El audio se genera recién cuando tocás un botón de reproducción (los navegadores no dejan sonar nada antes de una interacción). Si no escuchás nada, revisá el volumen del sistema y que la pestaña no esté silenciada. En el celular, sacá el modo silencio.
 
 ## Secciones
@@ -16,7 +33,7 @@ La barra lateral (arriba en el celular) tiene cinco secciones. Cada una tiene su
 | Lecciones | `#lecciones` | Las 7 lecciones en orden |
 | Laboratorio | `#lab` | Los 8 laboratorios de audio |
 | Biblioteca | `#bibliografia` | Los cinco libros, con sus citas filtrables |
-| Glosario | `#glosario` | 284 términos en 10 categorías, con buscador y índice A–Z |
+| Glosario | `#glosario` | 284 términos en 10 categorías, con buscador e índice A–Z (por categoría en chino, japonés e hindi) |
 
 El buscador de la barra superior (en pantallas anchas) busca en el glosario: escribí y apretá Enter.
 
@@ -55,10 +72,10 @@ Cada lección combina:
 
 ## Progreso guardado
 
-Las lecciones leídas, el puntaje del entrenamiento auditivo y los días del temporizador de hábitos se guardan en el navegador (`localStorage`, con claves que empiezan con `senal:`). No se envía nada a ningún servidor. Si borrás los datos del sitio o usás una ventana privada, el progreso arranca de cero.
+Las lecciones leídas, el puntaje del entrenamiento auditivo, los días del temporizador de hábitos y el idioma elegido se guardan en el navegador (`localStorage`, con claves que empiezan con `senal:`). No se envía nada a ningún servidor. Si borrás los datos del sitio o usás una ventana privada, el progreso arranca de cero.
 
 ## Requisitos
 
 - Un navegador actual: Chrome, Edge, Firefox o Safari (también en Android e iOS).
 - JavaScript habilitado.
-- Conexión a internet solo para las tipografías de Google Fonts; sin conexión la app funciona igual con fuentes del sistema (si la abrís desde el archivo de `dist/`).
+- Conexión a internet solo para las tipografías de Google Fonts (en chino, japonés e hindi se cargan las Noto Sans correspondientes); sin conexión la app funciona igual con fuentes del sistema (si la abrís desde el archivo de `dist/`).

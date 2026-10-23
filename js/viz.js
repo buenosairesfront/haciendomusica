@@ -138,17 +138,19 @@ window.S = window.S || {};
 
   // ---------- UI helpers ----------
   let uid = 0;
+  // el() traduce solo: textos hijos, html y los atributos que se leen en pantalla.
+  const T = S.T, TR_ATTR = { title: 1, placeholder: 1, "aria-label": 1 };
   U.el = function (tag, attrs, ...kids) {
     const e = document.createElement(tag);
     if (attrs) for (const k in attrs) {
       const v = attrs[k];
       if (k === "class") e.className = v;
-      else if (k === "html") e.innerHTML = v;
+      else if (k === "html") e.innerHTML = T(v);
       else if (k === "style" && typeof v === "object") { for (const sk in v) sk.startsWith("--") ? e.style.setProperty(sk, v[sk]) : (e.style[sk] = v[sk]); }
       else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2), v);
-      else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+      else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : TR_ATTR[k] ? T(v) : v);
     }
-    kids.flat().forEach((k) => { if (k == null || k === false) return; e.append(k.nodeType ? k : document.createTextNode(k)); });
+    kids.flat().forEach((k) => { if (k == null || k === false) return; e.append(k.nodeType ? k : document.createTextNode(T(k))); });
     return e;
   };
   const el = U.el;
@@ -199,7 +201,7 @@ window.S = window.S || {};
   U.playBtn = function (label, onToggle, cls) {
     const b = el("button", { type: "button", class: "btn " + (cls || "primary") });
     let on = false;
-    const render = () => { b.innerHTML = (on ? U.icon.stop : U.icon.play) + "<span>" + (on ? "Detener" : label) + "</span>"; b.classList.toggle("on", on && cls !== "primary"); };
+    const render = () => { b.innerHTML = (on ? U.icon.stop : U.icon.play) + "<span>" + T(on ? "Detener" : label) + "</span>"; b.classList.toggle("on", on && cls !== "primary"); };
     b.addEventListener("click", () => { on = onToggle(!on) !== false ? !on : on; render(); });
     b.setOn = (v) => { on = v; render(); };
     render();
@@ -218,4 +220,5 @@ window.S = window.S || {};
     try { navigator.clipboard.writeText(text).then(done, () => U.toast("Seleccioná el código y copialo a mano")); }
     catch (e) { U.toast("Seleccioná el código y copialo a mano"); }
   };
+  S.i18n.deep(V.BANDS);
 })(window.S);
